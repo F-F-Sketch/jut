@@ -209,7 +209,7 @@ export default function OnboardingPage({ params }: PageProps) {
                   </select>
                 </Field>
                 <Field label={loc === 'es' ? 'Idioma principal' : 'Primary language'}>
-                  <select className="input" value={business.primary_language} onChange={e => setBusiness(b => ({ ...b, primary_language: e.target.value }))}>
+                  <select className="input" value={business.primary_language} onChange={e => setBusiness(b => ({ ...b, primary_language: e.target.value as 'en' | 'es' }))}>
                     <option value="es">🇨🇴 Español</option>
                     <option value="en">🇺🇸 English</option>
                   </select>
