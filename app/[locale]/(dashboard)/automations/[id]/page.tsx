@@ -202,7 +202,7 @@ export default function AutomationEditPage({ params }: PageProps) {
                   <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>
                     {ACTION_LABELS[action.type]?.[loc] ?? action.type}
                   </p>
-                  {action.config.message && (
+                  {(action.config.message as string) {action.config.message && ({action.config.message && ( (
                     <p className="text-xs truncate mt-0.5" style={{ color: 'var(--text-3)' }}>
                       {String(action.config.message).slice(0, 80)}
                     </p>
