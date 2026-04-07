@@ -11,8 +11,25 @@ import { timeAgo } from '@/lib/utils'
 
 interface PageProps { params: { locale: string; id: string } }
 
+const TRIGGER_ICONS: Record<string, string> = {
+  instagram_comment: '💬', instagram_dm: '📩', keyword_match: '🔑',
+  new_follower: '👤', schedule: '⏰', webhook: '🔗', manual: '▶️',
+}
+
+const ACTION_LABELS: Record<string, { en: string; es: string }> = {
+  send_dm:            { en: 'Send DM',           es: 'Enviar DM' },
+  send_comment_reply: { en: 'Reply to Comment',  es: 'Responder Comentario' },
+  create_lead:        { en: 'Create Lead',        es: 'Crear Lead' },
+  add_tag:            { en: 'Add Tag',            es: 'Agregar Etiqueta' },
+  ai_response:        { en: 'AI Response',        es: 'Respuesta IA' },
+  wait:               { en: 'Wait',               es: 'Esperar' },
+  update_lead_status: { en: 'Update Lead Status', es: 'Actualizar Estado Lead' },
+  webhook:            { en: 'Webhook',            es: 'Webhook' },
+}
+
 export default function AutomationEditPage({ params }: PageProps) {
   const { locale, id } = params
+  const loc = locale as 'en' | 'es'
   const router = useRouter()
   const supabase = createClient()
 
@@ -42,11 +59,8 @@ export default function AutomationEditPage({ params }: PageProps) {
     const { error } = await supabase.from('automations').update({
       name, description, status, updated_at: new Date().toISOString(),
     }).eq('id', id)
-    if (error) {
-      toast.error(error.message)
-    } else {
-      toast.success(locale === 'es' ? 'Guardado' : 'Saved')
-    }
+    if (error) toast.error(error.message)
+    else toast.success(locale === 'es' ? 'Guardado' : 'Saved')
     setSaving(false)
   }
 
@@ -66,22 +80,6 @@ export default function AutomationEditPage({ params }: PageProps) {
     router.push(`/${locale}/automations`)
   }
 
-  const TRIGGER_ICONS: Record<string, string> = {
-    instagram_comment: '💬', instagram_dm: '📩', keyword_match: '🔑',
-    new_follower: '👤', schedule: '⏰', webhook: '🔗', manual: '▶️',
-  }
-
-  const ACTION_LABELS: Record<string, { en: string; es: string }> = {
-    send_dm:             { en: 'Send DM',           es: 'Enviar DM' },
-    send_comment_reply:  { en: 'Reply to Comment',  es: 'Responder Comentario' },
-    create_lead:         { en: 'Create Lead',        es: 'Crear Lead' },
-    add_tag:             { en: 'Add Tag',            es: 'Agregar Etiqueta' },
-    ai_response:         { en: 'AI Response',        es: 'Respuesta IA' },
-    wait:                { en: 'Wait',               es: 'Esperar' },
-    update_lead_status:  { en: 'Update Lead Status', es: 'Actualizar Estado Lead' },
-    webhook:             { en: 'Webhook',            es: 'Webhook' },
-  }
-
   if (loading) return (
     <div className="flex items-center justify-center h-64">
       <Loader2 size={24} className="animate-spin" style={{ color: 'var(--pink)' }} />
@@ -94,10 +92,9 @@ export default function AutomationEditPage({ params }: PageProps) {
     </div>
   )
 
-  const loc = locale as 'en' | 'es'
-
   return (
     <div className="p-8 max-w-3xl mx-auto space-y-6">
+
       {/* Header */}
       <div className="flex items-center gap-4">
         <Link href={`/${locale}/automations`} className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: 'var(--surface)', border: '1px solid var(--border-2)' }}>
@@ -109,8 +106,7 @@ export default function AutomationEditPage({ params }: PageProps) {
           </h1>
           <p className="text-sm" style={{ color: 'var(--text-3)' }}>
             {locale === 'es' ? 'Última ejecución:' : 'Last run:'}{' '}
-            {auto.last_run_at ? timeAgo(auto.last_run_at, loc) : (locale === 'es' ? 'Nunca' : 'Never')} ·{' '}
-            {auto.run_count} {locale === 'es' ? 'ejecuciones totales' : 'total runs'}
+            {auto.last_run_at ? timeAgo(auto.last_run_at, loc) : (locale === 'es' ? 'Nunca' : 'Never')} · {auto.run_count} {locale === 'es' ? 'ejecuciones' : 'runs'}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -119,13 +115,10 @@ export default function AutomationEditPage({ params }: PageProps) {
             className="flex items-center gap-2 text-sm px-4 py-2 rounded-xl transition-all"
             style={status === 'active'
               ? { background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', color: '#22c55e' }
-              : { background: 'var(--surface-2)', border: '1px solid var(--border-2)', color: 'var(--text-2)' }
-            }
+              : { background: 'var(--surface-2)', border: '1px solid var(--border-2)', color: 'var(--text-2)' }}
           >
             {status === 'active' ? <Pause size={14} /> : <Play size={14} />}
-            {status === 'active'
-              ? (locale === 'es' ? 'Pausar' : 'Pause')
-              : (locale === 'es' ? 'Activar' : 'Activate')}
+            {status === 'active' ? (locale === 'es' ? 'Pausar' : 'Pause') : (locale === 'es' ? 'Activar' : 'Activate')}
           </button>
           <button onClick={save} disabled={saving} className="btn-primary flex items-center gap-2">
             {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
@@ -134,12 +127,12 @@ export default function AutomationEditPage({ params }: PageProps) {
         </div>
       </div>
 
-      {/* Stats row */}
+      {/* Stats */}
       <div className="grid grid-cols-3 gap-4">
         {[
           { label: locale === 'es' ? 'Estado' : 'Status', value: status },
-          { label: locale === 'es' ? 'Ejecuciones' : 'Total Runs', value: auto.run_count.toString() },
-          { label: locale === 'es' ? 'Acciones' : 'Actions', value: auto.actions.length.toString() },
+          { label: locale === 'es' ? 'Ejecuciones' : 'Total Runs', value: String(auto.run_count) },
+          { label: locale === 'es' ? 'Acciones' : 'Actions', value: String(auto.actions.length) },
         ].map(s => (
           <div key={s.label} className="card rounded-2xl p-4 text-center">
             <p className="font-display font-bold text-xl capitalize" style={{ color: 'var(--text)' }}>{s.value}</p>
@@ -167,7 +160,7 @@ export default function AutomationEditPage({ params }: PageProps) {
         </div>
       </div>
 
-      {/* Trigger preview */}
+      {/* Trigger */}
       <div className="card rounded-2xl p-6 space-y-4">
         <h2 className="font-display font-bold text-base" style={{ color: 'var(--text)' }}>Trigger</h2>
         <div className="flex items-center gap-4 rounded-xl p-4" style={{ background: 'var(--surface-2)', border: '1px solid var(--border-2)' }}>
@@ -178,19 +171,18 @@ export default function AutomationEditPage({ params }: PageProps) {
             </p>
             {auto.trigger.keywords && auto.trigger.keywords.length > 0 && (
               <div className="flex flex-wrap gap-1 mt-2">
-                {auto.trigger.keywords.map(kw => (
-                  <span key={kw} className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(237,25,102,0.1)', color: 'var(--pink)', border: '1px solid rgba(237,25,102,0.2)' }}>{kw}</span>
+                {auto.trigger.keywords.map((kw: string) => (
+                  <span key={kw} className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(237,25,102,0.1)', color: 'var(--pink)', border: '1px solid rgba(237,25,102,0.2)' }}>
+                    {kw}
+                  </span>
                 ))}
               </div>
             )}
           </div>
-          <Link href={`/${locale}/automations/new`} className="ml-auto btn-secondary text-xs px-3 py-1.5">
-            {locale === 'es' ? 'Cambiar' : 'Change'}
-          </Link>
         </div>
       </div>
 
-      {/* Actions preview */}
+      {/* Actions */}
       <div className="card rounded-2xl p-6 space-y-4">
         <h2 className="font-display font-bold text-base" style={{ color: 'var(--text)' }}>
           {locale === 'es' ? 'Acciones' : 'Actions'} ({auto.actions.length})
@@ -201,28 +193,28 @@ export default function AutomationEditPage({ params }: PageProps) {
           </p>
         ) : (
           <div className="space-y-3">
-            {[...auto.actions]
-              .sort((a, b) => a.order - b.order)
-              .map((action, i) => (
-                <div key={action.id} className="flex items-center gap-4 rounded-xl p-4" style={{ background: 'var(--surface-2)', border: '1px solid var(--border)' }}>
-                  <span className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0" style={{ background: 'var(--pink)' }}>{i + 1}</span>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>
-                      {ACTION_LABELS[action.type]?.[loc] ?? action.type}
+            {[...auto.actions].sort((a, b) => a.order - b.order).map((action, i) => (
+              <div key={action.id} className="flex items-center gap-4 rounded-xl p-4" style={{ background: 'var(--surface-2)', border: '1px solid var(--border)' }}>
+                <span className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0" style={{ background: 'var(--pink)' }}>
+                  {i + 1}
+                </span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>
+                    {ACTION_LABELS[action.type]?.[loc] ?? action.type}
+                  </p>
+                  {action.config.message && (
+                    <p className="text-xs truncate mt-0.5" style={{ color: 'var(--text-3)' }}>
+                      {String(action.config.message).slice(0, 80)}
                     </p>
-                    {(action.config.message as string) {action.config.message && ({action.config.message && ( (
-                      <p className="text-xs truncate mt-0.5" style={{ color: 'var(--text-3)' }}>
-                        {String(action.config.message).slice(0, 80)}
-                      </p>
-                    )}
-                    {action.delay_seconds && action.delay_seconds > 0 && (
-                      <p className="text-xs mt-0.5" style={{ color: 'var(--text-3)' }}>
-                        ⏰ {locale === 'es' ? 'Espera' : 'Wait'} {action.delay_seconds}s
-                      </p>
-                    )}
-                  </div>
+                  )}
+                  {action.delay_seconds && action.delay_seconds > 0 && (
+                    <p className="text-xs mt-0.5" style={{ color: 'var(--text-3)' }}>
+                      ⏰ {locale === 'es' ? 'Espera' : 'Wait'} {action.delay_seconds}s
+                    </p>
+                  )}
                 </div>
-              ))}
+              </div>
+            ))}
           </div>
         )}
       </div>
@@ -244,6 +236,7 @@ export default function AutomationEditPage({ params }: PageProps) {
           {locale === 'es' ? 'Eliminar automatización' : 'Delete automation'}
         </button>
       </div>
+
     </div>
   )
 }
