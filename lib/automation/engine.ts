@@ -35,7 +35,7 @@ export function evaluateTrigger(
 
   if (trigger.platform && trigger.platform !== event.payload.platform) return false
 
-  if (trigger.content_type && trigger.content_type !== 'any') {
+  if (trigger.content_type && (trigger.content_type as string) !== 'any') {
     if (trigger.content_type !== event.payload.content_type) return false
   }
 
