@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
 async function handleComment(value: Record<string, unknown>, pageId: string) {
   const commentText = (value.text as string) ?? ''
   const commenterId = (value.from as { id: string })?.id ?? ''
-  const commenterName = (value.from as { name: string })?.name ?? commentererId
+  const commenterName = (value.from as { name: string })?.name ?? commenterId
   const postId = (value.media as { id: string })?.id ?? ''
   const contentType = 'post' // default; reel detection handled by media type
 
