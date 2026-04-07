@@ -14,7 +14,7 @@ interface UseRealtimeOptions<T> {
   onInsert?: (record: T) => void
   onUpdate?: (record: T) => void
   onDelete?: (record: T) => void
-  onChange?: (payload: RealtimePostgresChangesPayload<T>) => void
+  onChange?: (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => void
 }
 
 export function useRealtime<T extends Record<string, unknown>>({
@@ -40,7 +40,7 @@ export function useRealtime<T extends Record<string, unknown>>({
         table,
         ...(filter ? { filter } : {}),
       },
-      (payload: RealtimePostgresChangesPayload<T>) => {
+      (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => {
         onChange?.(payload)
         if (payload.eventType === 'INSERT') onInsert?.(payload.new as T)
         if (payload.eventType === 'UPDATE') onUpdate?.(payload.new as T)
