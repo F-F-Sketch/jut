@@ -1,0 +1,258 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── JUT Design System ──────────────────────────────────────── */
+
+:root {
+  /* Brand */
+  --pink: #ED1966;
+  --pink-hover: #f52070;
+  --blue: #2152A4;
+  --blue-light: #4a90d9;
+
+  /* Backgrounds */
+  --bg: #050508;
+  --bg2: #0d0d14;
+  --bg3: #12121c;
+  --surface: #16161f;
+  --surface-2: #1e1e2d;
+  --surface-3: #26263a;
+
+  /* Borders */
+  --border: rgba(255, 255, 255, 0.06);
+  --border-2: rgba(255, 255, 255, 0.10);
+  --border-3: rgba(255, 255, 255, 0.16);
+
+  /* Text */
+  --text: #f0f0f8;
+  --text-2: #a0a0c0;
+  --text-3: #606080;
+
+  /* Semantics */
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --info: #3b82f6;
+}
+
+/* ── Base ───────────────────────────────────────────────────── */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+h1, h2, h3, h4, h5 {
+  font-family: 'Syne', system-ui, sans-serif;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+/* ── Scrollbar ──────────────────────────────────────────────── */
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--surface-3); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-3); }
+
+/* ── Selection ──────────────────────────────────────────────── */
+
+::selection {
+  background: rgba(237, 25, 102, 0.3);
+  color: #fff;
+}
+
+/* ── Focus ──────────────────────────────────────────────────── */
+
+:focus-visible {
+  outline: 2px solid var(--pink);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ── JUT Component Layer ─────────────────────────────────────── */
+
+@layer components {
+
+  /* Buttons */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-[10px] font-display font-bold text-sm px-5 py-2.5 text-white transition-all duration-200;
+    background: var(--pink);
+    box-shadow: 0 0 30px rgba(237, 25, 102, 0.3);
+  }
+  .btn-primary:hover {
+    background: var(--pink-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 40px rgba(237, 25, 102, 0.45);
+  }
+  .btn-primary:active { transform: translateY(0); }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-[10px] font-sans font-medium text-sm px-5 py-2.5 transition-all duration-200;
+    background: var(--surface-2);
+    border: 1px solid var(--border-2);
+    color: var(--text);
+  }
+  .btn-secondary:hover {
+    background: var(--surface-3);
+    border-color: var(--border-3);
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-[10px] font-sans font-medium text-sm px-5 py-2.5 transition-all duration-200;
+    background: transparent;
+    border: 1px solid var(--border-2);
+    color: var(--text-2);
+  }
+  .btn-ghost:hover { color: var(--text); border-color: var(--border-3); }
+
+  /* Cards */
+  .card {
+    @apply rounded-2xl;
+    background: var(--surface);
+    border: 1px solid var(--border);
+  }
+
+  .card-hover {
+    @apply card transition-all duration-300;
+  }
+  .card-hover:hover {
+    border-color: var(--border-2);
+    transform: translateY(-2px);
+  }
+
+  /* Inputs */
+  .input {
+    @apply w-full rounded-xl px-4 py-3 text-sm font-sans outline-none transition-all duration-200;
+    background: var(--surface);
+    border: 1px solid var(--border-2);
+    color: var(--text);
+  }
+  .input::placeholder { color: var(--text-3); }
+  .input:focus { border-color: rgba(237, 25, 102, 0.5); }
+
+  /* Badges */
+  .badge {
+    @apply inline-flex items-center gap-1 rounded-full text-xs font-semibold px-2.5 py-1 border;
+  }
+
+  /* Status dot */
+  .status-dot {
+    @apply w-2 h-2 rounded-full flex-shrink-0;
+  }
+
+  /* Section label */
+  .section-label {
+    @apply text-xs font-bold tracking-widest uppercase;
+    color: var(--pink);
+  }
+
+  /* Gradient text */
+  .gradient-text {
+    background: linear-gradient(135deg, var(--pink), var(--blue-light));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Glow line */
+  .glow-line {
+    height: 2px;
+    background: linear-gradient(90deg, var(--pink), var(--blue));
+    border-radius: 2px;
+  }
+
+  /* Sidebar item */
+  .nav-item {
+    @apply flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 w-full;
+    color: var(--text-2);
+  }
+  .nav-item:hover { background: var(--surface-2); color: var(--text); }
+  .nav-item.active {
+    background: rgba(237, 25, 102, 0.12);
+    color: var(--pink);
+    border: 1px solid rgba(237, 25, 102, 0.2);
+  }
+
+  /* Table */
+  .jut-table { @apply w-full text-sm; }
+  .jut-table thead tr {
+    border-bottom: 1px solid var(--border);
+  }
+  .jut-table th {
+    @apply text-left py-3 px-4 font-semibold text-xs tracking-wider uppercase;
+    color: var(--text-3);
+  }
+  .jut-table td { @apply py-3.5 px-4; color: var(--text-2); }
+  .jut-table tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+  }
+  .jut-table tbody tr:hover { background: var(--surface); }
+  .jut-table tbody tr:last-child { border-bottom: none; }
+
+  /* Empty state */
+  .empty-state {
+    @apply flex flex-col items-center justify-center text-center py-20 gap-4;
+    color: var(--text-3);
+  }
+
+  /* Pink accent border top */
+  .accent-top::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--pink), var(--blue), transparent);
+  }
+
+}
+
+/* ── Animations ─────────────────────────────────────────────── */
+
+@layer utilities {
+  .animate-fade-up {
+    animation: fadeUp 0.6s ease both;
+  }
+  .animate-fade-in {
+    animation: fadeIn 0.4s ease both;
+  }
+  .animate-slide-in-left {
+    animation: slideInLeft 0.5s ease both;
+  }
+  .animation-delay-100 { animation-delay: 100ms; }
+  .animation-delay-200 { animation-delay: 200ms; }
+  .animation-delay-300 { animation-delay: 300ms; }
+  .animation-delay-400 { animation-delay: 400ms; }
+  .animation-delay-500 { animation-delay: 500ms; }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes pulsePink {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(237, 25, 102, 0.4); }
+  50%       { box-shadow: 0 0 0 8px rgba(237, 25, 102, 0); }
+}
