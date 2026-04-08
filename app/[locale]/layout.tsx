@@ -1,43 +1,25 @@
-import { NextIntlClientProvider } from 'next-intl'
-import { getMessages } from 'next-intl/server'
-import { notFound } from 'next/navigation'
-import { locales, type Locale } from '@/i18n'
-import { Toaster } from 'react-hot-toast'
+export const dynamic = 'force-dynamic'
 
-interface LocaleLayoutProps {
-  children: React.ReactNode
-  params: { locale: string }
-}
+import {setRequestLocale} from 'next-intl/server';
 
 export function generateStaticParams() {
-  return locales.map((locale) => ({ locale }))
+  return [{locale: 'en'}, {locale: 'es'}];
 }
 
-export default async function LocaleLayout({ children, params }: LocaleLayoutProps) {
-  const { locale } = params
+export default async function LocaleLayout({
+  children,
+  params
+}: {
+  children: React.ReactNode;
+  params: Promise<{locale: string}>;
+}) {
+  const {locale} = await params;
 
-  if (!locales.includes(locale as Locale)) notFound()
-
-  const messages = await getMessages()
+  setRequestLocale(locale);
 
   return (
-    <NextIntlClientProvider locale={locale} messages={messages}>
-      {children}
-      <Toaster
-        position="bottom-right"
-        toastOptions={{
-          style: {
-            background: '#16161f',
-            color: '#f0f0f8',
-            border: '1px solid rgba(255,255,255,0.10)',
-            borderRadius: '12px',
-            fontSize: '14px',
-          },
-          success: {
-            iconTheme: { primary: '#ED1966', secondary: '#fff' },
-          },
-        }}
-      />
-    </NextIntlClientProvider>
-  )
+    <html lang={locale}>
+      <body>{children}</body>
+    </html>
+  );
 }
