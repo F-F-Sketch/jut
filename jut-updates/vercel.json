@@ -1,0 +1,62 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/automations",
+      "schedule": "* * * * *"
+    }
+  ],
+  "buildCommand": "next build",
+  "devCommand": "next dev",
+  "installCommand": "npm install",
+  "framework": "nextjs",
+  "outputDirectory": ".next",
+  "regions": ["iad1"],
+  "functions": {
+    "app/api/ai/chat/route.ts": {
+      "maxDuration": 30
+    },
+    "app/api/webhooks/instagram/route.ts": {
+      "maxDuration": 10
+    },
+    "app/api/automations/run/route.ts": {
+      "maxDuration": 60
+    },
+    "app/api/engine/trigger/route.ts": {
+      "maxDuration": 60
+    },
+    "app/api/cron/automations/route.ts": {
+      "maxDuration": 60
+    },
+    "app/api/stripe/webhook/route.ts": {
+      "maxDuration": 10
+    }
+  },
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET, POST, PUT, PATCH, DELETE, OPTIONS" },
+        { "key": "Access-Control-Allow-Headers", "value": "Content-Type, Authorization, stripe-signature" }
+      ]
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/sitemap.xml",
+      "destination": "/api/sitemap"
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/dashboard",
+      "destination": "/en/dashboard",
+      "permanent": false
+    },
+    {
+      "source": "/login",
+      "destination": "/en/login",
+      "permanent": false
+    }
+  ]
+}
