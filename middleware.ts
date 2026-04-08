@@ -24,17 +24,20 @@ export async function middleware(request: NextRequest) {
       const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
       if (!supabaseUrl || !supabaseKey) {
+        // env vars missing — let the page handle auth
         return intlMiddleware(request)
       }
 
       const { createServerClient } = await import('@supabase/ssr')
-      const pendingCookies: { name: string; value: string; options?: Record<string, unknown> }[] = []
+      let response = NextResponse.next({ request })
 
       const supabase = createServerClient(supabaseUrl, supabaseKey, {
         cookies: {
           getAll: () => request.cookies.getAll(),
-          setAll: (cookiesToSet: { name: string; value: string; options?: Record<string, unknown> }[]) => {
-            pendingCookies.push(...cookiesToSet)
+          setAll: (cookiesToSet) => {
+            cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
+            response = NextResponse.next({ request })
+            cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options))
           },
         },
       })
@@ -48,14 +51,10 @@ export async function middleware(request: NextRequest) {
         return NextResponse.redirect(loginUrl)
       }
 
-      // ✅ Always run intlMiddleware so locale headers are set for getMessages()
-      const response = intlMiddleware(request)
-      pendingCookies.forEach(({ name, value, options }) => {
-        response.cookies.set(name, value, options as Parameters<typeof response.cookies.set>[2])
-      })
       return response
-
-    } catch {
+    } catch (error) {
+      console.error('Middleware error:', error)
+      // On any error, let the page render and handle auth itself
       return intlMiddleware(request)
     }
   }

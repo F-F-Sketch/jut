@@ -12,13 +12,24 @@
   "outputDirectory": ".next",
   "regions": ["iad1"],
   "functions": {
-    "app/api/ai/chat/route.ts": { "maxDuration": 30 },
-    "app/api/webhooks/instagram/route.ts": { "maxDuration": 10 },
-    "app/api/automations/run/route.ts": { "maxDuration": 60 },
-    "app/api/engine/trigger/route.ts": { "maxDuration": 60 },
-    "app/api/cron/automations/route.ts": { "maxDuration": 60 },
-    "app/api/creative/analyze/route.ts": { "maxDuration": 60 },
-    "app/api/creative/enhance/route.ts": { "maxDuration": 30 }
+    "app/api/ai/chat/route.ts": {
+      "maxDuration": 30
+    },
+    "app/api/webhooks/instagram/route.ts": {
+      "maxDuration": 10
+    },
+    "app/api/automations/run/route.ts": {
+      "maxDuration": 60
+    },
+    "app/api/engine/trigger/route.ts": {
+      "maxDuration": 60
+    },
+    "app/api/cron/automations/route.ts": {
+      "maxDuration": 60
+    },
+    "app/api/stripe/webhook/route.ts": {
+      "maxDuration": 10
+    }
   },
   "headers": [
     {
@@ -30,8 +41,22 @@
       ]
     }
   ],
+  "rewrites": [
+    {
+      "source": "/sitemap.xml",
+      "destination": "/api/sitemap"
+    }
+  ],
   "redirects": [
-    { "source": "/dashboard", "destination": "/en/dashboard", "permanent": false },
-    { "source": "/login", "destination": "/en/login", "permanent": false }
+    {
+      "source": "/dashboard",
+      "destination": "/en/dashboard",
+      "permanent": false
+    },
+    {
+      "source": "/login",
+      "destination": "/en/login",
+      "permanent": false
+    }
   ]
 }
