@@ -28,15 +28,13 @@ export async function middleware(request: NextRequest) {
       }
 
       const { createServerClient } = await import('@supabase/ssr')
-      let response = NextResponse.next({ request })
+      const pendingCookies: { name: string; value: string; options?: Record<string, unknown> }[] = []
 
       const supabase = createServerClient(supabaseUrl, supabaseKey, {
         cookies: {
           getAll: () => request.cookies.getAll(),
           setAll: (cookiesToSet: { name: string; value: string; options?: Record<string, unknown> }[]) => {
-            cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
-            response = NextResponse.next({ request })
-            cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options))
+            pendingCookies.push(...cookiesToSet)
           },
         },
       })
@@ -50,7 +48,13 @@ export async function middleware(request: NextRequest) {
         return NextResponse.redirect(loginUrl)
       }
 
+      // ✅ Always run intlMiddleware so locale headers are set for getMessages()
+      const response = intlMiddleware(request)
+      pendingCookies.forEach(({ name, value, options }) => {
+        response.cookies.set(name, value, options as Parameters<typeof response.cookies.set>[2])
+      })
       return response
+
     } catch {
       return intlMiddleware(request)
     }
