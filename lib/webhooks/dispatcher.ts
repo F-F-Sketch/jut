@@ -27,40 +27,17 @@ export async function fireUserWebhooks(
     timestamp: event.timestamp,
     trigger_data: event.payload,
     automations_fired: results.filter(r => r.steps_executed > 0).length,
-    results: results.map(r => ({
-      automation_id: r.automation_id,
-      steps_executed: r.steps_executed,
-      lead_id: r.lead_id,
-      conversation_id: r.conversation_id,
-    })),
+    results: results.map(r => ({ automation_id: r.automation_id, steps_executed: r.steps_executed, lead_id: r.lead_id, conversation_id: r.conversation_id })),
   }
 
   await Promise.allSettled(
     webhooks.map(async (wh: any) => {
       try {
-        const headers: Record<string, string> = {
-          'Content-Type': 'application/json',
-          'X-JUT-Event': event.type,
-          'X-JUT-Timestamp': event.timestamp,
-        }
+        const headers: Record<string, string> = { 'Content-Type': 'application/json', 'X-JUT-Event': event.type, 'X-JUT-Timestamp': event.timestamp }
         if (wh.secret) headers['X-JUT-Secret'] = wh.secret
-
-        const res = await fetch(wh.url, {
-          method: 'POST',
-          headers,
-          body: JSON.stringify(payload),
-          signal: AbortSignal.timeout(10000),
-        })
-
-        await supabase.from('user_webhooks').update({
-          last_fired: new Date().toISOString(),
-          fire_count: (wh.fire_count ?? 0) + 1,
-        }).eq('id', wh.id)
-
-        console.log(`[Webhooks] ${wh.name} → ${res.status}`)
-      } catch (err) {
-        console.error(`[Webhooks] ${wh.name} failed:`, err)
-      }
+        await fetch(wh.url, { method: 'POST', headers, body: JSON.stringify(payload), signal: AbortSignal.timeout(10000) })
+        await supabase.from('user_webhooks').update({ last_fired: new Date().toISOString(), fire_count: (wh.fire_count ?? 0) + 1 }).eq('id', wh.id)
+      } catch (err) { console.error(`[Webhooks] ${wh.name} failed:`, err) }
     })
   )
 }
