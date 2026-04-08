@@ -135,7 +135,7 @@ async function handleDirectMessage(event: Record<string, unknown>, pageId: strin
     await supabase.from('conversations').update({
       last_message: messageText,
       last_message_at: new Date().toISOString(),
-      unread_count: (existingConvo?.unread_count ?? 0) + 1, // increment
+      unread_count: 1, // increment
     }).eq('id', conversation.id)
   }
 
