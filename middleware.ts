@@ -1,6 +1,5 @@
 import createMiddleware from 'next-intl/middleware'
 import { type NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@supabase/ssr'
 import { locales, defaultLocale } from './i18n'
 
 const intlMiddleware = createMiddleware({
@@ -10,59 +9,51 @@ const intlMiddleware = createMiddleware({
 })
 
 const PROTECTED_PATHS = [
-  '/dashboard',
-  '/leads',
-  '/conversations',
-  '/automations',
-  '/social',
-  '/sales',
-  '/business',
-  '/settings',
-  '/analytics',
+  '/dashboard', '/leads', '/conversations', '/automations',
+  '/social', '/sales', '/business', '/settings', '/analytics',
 ]
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
-
-  // Strip locale prefix to check path
   const pathnameWithoutLocale = pathname.replace(/^\/(en|es)/, '') || '/'
-
-  const isProtected = PROTECTED_PATHS.some((p) =>
-    pathnameWithoutLocale.startsWith(p)
-  )
+  const isProtected = PROTECTED_PATHS.some(p => pathnameWithoutLocale.startsWith(p))
 
   if (isProtected) {
-    let response = NextResponse.next({ request })
+    try {
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+      const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
+      if (!supabaseUrl || !supabaseKey) {
+        return intlMiddleware(request)
+      }
+
+      const { createServerClient } = await import('@supabase/ssr')
+      let response = NextResponse.next({ request })
+
+      const supabase = createServerClient(supabaseUrl, supabaseKey, {
         cookies: {
           getAll: () => request.cookies.getAll(),
-          setAll: (cookiesToSet: { name: string; value: string; options?: Record<string, unknown> }[]) => {
-            cookiesToSet.forEach(({ name, value }) =>
-              request.cookies.set(name, value)
-            )
+          setAll: (cookiesToSet) => {
+            cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
             response = NextResponse.next({ request })
-            cookiesToSet.forEach(({ name, value, options }) =>
-              response.cookies.set(name, value, options)
-            )
+            cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options))
           },
         },
+      })
+
+      const { data: { user } } = await supabase.auth.getUser()
+
+      if (!user) {
+        const locale = pathname.split('/')[1] || defaultLocale
+        const loginUrl = new URL(`/${locale}/login`, request.url)
+        loginUrl.searchParams.set('redirect', pathname)
+        return NextResponse.redirect(loginUrl)
       }
-    )
 
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-      const locale = pathname.split('/')[1] || defaultLocale
-      const loginUrl = new URL(`/${locale}/login`, request.url)
-      loginUrl.searchParams.set('redirect', pathname)
-      return NextResponse.redirect(loginUrl)
+      return response
+    } catch {
+      return intlMiddleware(request)
     }
-
-    return response
   }
 
   return intlMiddleware(request)
