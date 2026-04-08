@@ -10,11 +10,14 @@ interface DashboardLayoutProps {
 
 export default async function DashboardLayout({ children, params }: DashboardLayoutProps) {
   const { locale } = params
-  const user = await getUser()
 
+  let user = null
+  try { user = await getUser() } catch {}
   if (!user) redirect(`/${locale}/login`)
 
-  const profile = await getUserProfile(user.id)
+  let profile = null
+  try { profile = await getUserProfile(user.id) } catch {}
+
   const userName = profile?.full_name ?? user.email?.split('@')[0] ?? 'User'
   const userPlan = profile?.plan ?? 'free'
 
@@ -23,9 +26,7 @@ export default async function DashboardLayout({ children, params }: DashboardLay
       <Sidebar locale={locale} userName={userName} userPlan={userPlan} />
       <div className="ml-64">
         <Topbar locale={locale} userName={userName} />
-        <main className="pt-[68px] min-h-screen">
-          {children}
-        </main>
+        <main className="pt-[68px] min-h-screen">{children}</main>
       </div>
     </div>
   )
