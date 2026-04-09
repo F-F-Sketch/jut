@@ -74,7 +74,6 @@ ${faqsText}
 IMPORTANT: Be human. Vary your responses. Don't repeat the same phrases. Sound natural.`
 }
 
-// ââ Main Response Generator ââââââââââââââââââââââââââââââââââââ
 export async function generateResponse(
   messages: ChatMessage[],
   config: any,
@@ -87,41 +86,60 @@ export async function generateResponse(
       response: locale === 'es'
         ? 'Hola! Gracias por escribir. Para continuar necesito configurar mi IA. Por favor contacta al administrador.'
         : 'Hi! Thanks for reaching out. AI responses are being configured. Please contact the admin.',
-      tokens: 0,
-      latency: Date.now() - startTime,
+      tokens: 0, latency: Date.now() - startTime,
     }
   }
   const systemPrompt = buildSystemPrompt(config, locale)
-  const anthropicMessages = messages.filter(m => m.role !== 'system').map(m => ({ role: m.role === 'assistant' ? 'assistant' : 'user', content: m.content }))
-  const response = await fetch('https://api.anthropic.com/v1/messages', { method: 'POST', headers: { 'Content-Type': 'application/json', 'anthropic-version': '2023-06-01', 'x-api-key': apiKey }, body: JSON.stringify({ model: AI_MODEL, max_tokens: 500, system: systemPrompt, messages: anthropicMessages }) })
+  const anthropicMessages = messages
+    .filter(m => m.role !== 'system')
+    .map(m => ({ role: m.role === 'assistant' ? 'assistant' : 'user', content: m.content }))
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
+    body: JSON.stringify({ model: AI_MODEL, max_tokens: 500, system: systemPrompt, messages: anthropicMessages }),
+  })
   if (!response.ok) throw new Error(`Anthropic API error: ${response.status}`)
   const data = await response.json()
-  return { response: data.content?.[0]?.text ?? '', tokens: (data.usage?.input_tokens ?? 0) + (data.usage?.output_tokens ?? 0), latency: Date.now() - startTime }
+  const text = data.content?.[0]?.text ?? ''
+  const tokens = (data.usage?.input_tokens ?? 0) + (data.usage?.output_tokens ?? 0)
+  return { response: text, tokens, latency: Date.now() - startTime }
 }
 
-export async function generateCommentReply(comment: string, postContext: string, config: any, locale: 'en' | 'es' = 'en'): Promise<string> {
-  const prompt = locale === 'es' ? `Alguien comentÃ³ en tu publicaciÃ³n: "${comment}". Contexto: "${postContext}". Escribe una respuesta pÃºblica corta que infite a escribir por DM. Suena humano.` : `Someone commented: "${comment}". Post context: "${postContext}". Write a short public reply inviting them to DM you. Sound human.`
+export async function generateCommentReply(
+  comment: string, postContext: string, config: any, locale: 'en' | 'es' = 'en'
+): Promise<string> {
+  const prompt = locale === 'es'
+    ? `Alguien comentÃ³: "${comment}". Contexto: "${postContext}". Escribe una respuesta corta (1 oraciÃ³n) que invite a DM por DM. Suena humano.`
+    : `Someone commented: "${comment}". Post: "${postContext}". Write a short (1 sentence) reply inviting them to DM. Sound human.`
   const { response } = await generateResponse([{ role: 'user', content: prompt }], config, locale)
   return response
 }
 
-export async function analyzeLeadQualification(conversationHistory: ChatMessage[], criteria: string, locale: 'en' | 'es' = 'en'): Promise<{ qualified: boolean; score: number; reason: string }> {
-  const prompt = locale === 'es' ? `Analiza esta conversaciÃ³n y determina si el lead estÃ¡ calificado segÃºn: "${criteria}". Responde SOLO en JSON: {"qualified": true/false, "score": 0-100, "reason": "breve explicaciÃ³n"}` : `Analyze this conversation and determine if the lead is qualified based on: "${criteria}". Respond ONLY in JSON: {"qualified": true/false, "score": 0-100, "reason": "brief explanation"}`
+export async function analyzeLeadQualification(
+  conversationHistory: ChatMessage[], criteria: string, locale: 'en' | 'es' = 'en'
+): Promise<{ qualified: boolean; score: number; reason: string }> {
+  const prompt = locale === 'es'
+    ? `Analiza esta conversaciÃ³n. SegÃºn: "${criteria}". Responde SOLO en JSON: {"qualified":true/false,"score":0-100,"reason":""}`
+    : `Analyze this conversation based on: "${criteria}". Respond ONLY in JSON: {"qualified":true/false,"score":0-100,"reason":""}`
   const apiKey = process.env.ANTHROPIC_API_KEY
   if (!apiKey) return { qualified: false, score: 0, reason: 'API not configured' }
-  const msgs = conversationHistory.filter(m => m.role !== 'system').map(m => ({ role: m.role === 'assistant' ? 'assistant' : 'user', content: m.content }))
-  msgs.push({ role: 'user', content: prompt })
-  const res = await fetch('https://api.anthropic.com/v1/messages', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' }, body: JSON.stringify({ model: AI_MODEL, max_tokens: 200, messages: msgs }) })
+  const msgs = [...conversationHistory.filter(m => m.role !== 'system').map(m => ({ role: m.role === 'assistant' ? 'assistant' : 'user', content: m.content })), { role: 'user', content: prompt }]
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
+    body: JSON.stringify({ model: AI_MODEL, max_tokens: 200, messages: msgs }),
+  })
   if (!res.ok) return { qualified: false, score: 0, reason: 'Analysis failed' }
   const data = await res.json()
   const text = data.content?.[0]?.text ?? '{}'
-  try { return JSON.parse(text.replace(/```json\n?|\n?```/g, '').trim()) } catch { return { qualified: false, score: 0, reason: 'Parse failed' } }
+  try { return JSON.parse(text.replace(/```json\n?|\n?```/g, '').trim()) }
+  catch { return { qualified: false, score: 0, reason: 'Parse failed' } }
 }
 
 interface BusinessConfig {
-  agent_name?: string; agent_role?: string; business_name: string; business_type: string;
-  website?: string; phone?: string; whatsapp_number?: string; instagram_handle?: string;
-  ai_tone: string; response_length?: string; human_behavior?: Record<string, boolean>;
-  qualification_criteria?: string; escalation_rules?: string; custom_instructions?: string;
-  faqs: any[]; offers: any[]; primary_language?: string;
+  agent_name?: string; agent_role?: string; business_name: string; business_type: string
+  website?: string; phone?: string; whatsapp_number?: string; instagram_handle?: string
+  ai_tone: string; response_length?: string; human_behavior?: Record<string, boolean>
+  qualification_criteria?: string; escalation_rules?: string; custom_instructions?: string
+  faqs: any[]; offers: any[]; primary_language?: string
 }
