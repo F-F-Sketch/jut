@@ -7,6 +7,40 @@ export interface TriggerPayload {
   data: Record<string, unknown>
 }
 
+export interface InstagramCommentEvent {
+  postId: string
+  commentId: string
+  userId: string
+  text: string
+  username: string
+}
+
+export interface InstagramDMEvent {
+  senderId: string
+  userId: string
+  text: string
+  username: string
+}
+
+export function createInstagramCommentEvent(data: Partial<InstagramCommentEvent>): InstagramCommentEvent {
+  return {
+    postId: data.postId ?? '',
+    commentId: data.commentId ?? '',
+    userId: data.userId ?? '',
+    text: data.text ?? '',
+    username: data.username ?? '',
+  }
+}
+
+export function createInstagramDMEvent(data: Partial<InstagramDMEvent>): InstagramDMEvent {
+  return {
+    senderId: data.senderId ?? '',
+    userId: data.userId ?? '',
+    text: data.text ?? '',
+    username: data.username ?? '',
+  }
+}
+
 export async function processTrigger(payload: TriggerPayload): Promise<ExecutionResult[]> {
   const supabase = await createClient()
   const results: ExecutionResult[] = []
@@ -44,10 +78,7 @@ export async function processTrigger(payload: TriggerPayload): Promise<Execution
 
 export async function runPendingAutomations(): Promise<void> {
   const supabase = await createClient()
-  const { data: scheduled } = await supabase
-    .from('automations')
-    .select('*')
-    .eq('status', 'active')
+  const { data: scheduled } = await supabase.from('automations').select('*').eq('status', 'active')
   if (!scheduled?.length) return
   for (const auto of scheduled) {
     const trigger = auto.trigger ?? {}
