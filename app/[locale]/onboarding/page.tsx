@@ -1,79 +1,197 @@
 'use client'
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { ArrowRight, ArrowLeft, Check, Loader2 } from 'lucide-react'
+import { Loader2, ChevronRight, ChevronLeft, Zap } from 'lucide-react'
 import toast from 'react-hot-toast'
 
-interface PageProps { params: { locale: string } }
-
 const T = {
-  en: { title: "Let's set up JUT", subtitle: "3 quick steps to start automating", step1: 'Your Business', step2: 'Your Goals', step3: 'Choose Plan', bizName: 'Business name', bizType: 'Type of business', instagram: 'Instagram handle', phone: 'WhatsApp number', tone: 'AI conversation tone', goals: 'What do you want to automate?', next: 'Continue', back: 'Back', finish: 'Launch JUT ð', skip: 'Skip for now' },
-  es: { title: 'Configuremos JUT', subtitle: '3 pasos rÃ¡pidos para empezar', step1: 'Tu Negocio', step2: 'Tus Metas', step3: 'Elige Plan', bizName: 'Nombre del negocio', bizType: 'Tipo de negocio', instagram: 'Usuario de Instagram', phone: 'NÃºmero de WhatsApp', tone: 'Tono de conversaciÃ³n IA', goals:"Â¯QuÃ© quieres automatizar?', next: 'Continuar', back: 'AtrÃ¡s', finish: 'Lanzar JUT ð ', skip: 'Saltar por ahora' },
+  en: {
+    title: "Let's set up JUT",
+    subtitle: '3 quick steps to start automating',
+    step1: 'Your Business', step2: 'Your Goals', step3: 'Choose Plan',
+    bizName: 'Business name', bizType: 'Type of business',
+    instagram: 'Instagram handle', phone: 'WhatsApp number',
+    tone: 'AI conversation tone', goals: 'What do you want to automate?',
+    next: 'Continue', back: 'Back', finish: 'Launch JUT', skip: 'Skip for now',
+  },
+  es: {
+    title: 'Configuremos JUT',
+    subtitle: '3 pasos rapidos para empezar',
+    step1: 'Tu Negocio', step2: 'Tus Metas', step3: 'Elige Plan',
+    bizName: 'Nombre del negocio', bizType: 'Tipo de negocio',
+    instagram: 'Usuario de Instagram', phone: 'Numero de WhatsApp',
+    tone: 'Tono de conversacion IA', goals: 'Que quieres automatizar?',
+    next: 'Continuar', back: 'Atras', finish: 'Lanzar JUT', skip: 'Saltar por ahora',
+  },
 }
 
 const BIZ_TYPES = {
-  en: ['E-commerce', 'Services', 'Coaching / Consulting', 'Restaurant / Food', 'Fashion / Beauty', 'Real Estate', 'Education', 'Other'],
-  es: ['E-commerce', 'Servicios', 'Coaching / ConsultorÃ­a', 'Restaurante / Comida', 'Moda / Belleza', 'Inmobiliaria', 'EducaciÃ³n', 'Otro'],
+  en: ['E-commerce','Services','Coaching / Consulting','Restaurant / Food','Fashion / Beauty','Real Estate','Education','Other'],
+  es: ['E-commerce','Servicios','Coaching / Consultoria','Restaurante / Comida','Moda / Belleza','Inmobiliaria','Educacion','Otro'],
 }
 
 const GOALS = {
-  en: ['Capture leads from Instagram comments', 'Automate DM responses 24/7', 'Qualify prospects automatically', 'Send product catalogs via DM', 'Book appointments automatically', 'Increase sales conversions'],
-  es: ['Capturar leads de comentarios', 'Automatizar respuestas DMs 24/7', 'Calificar prospectos automÃ¡ticamente', 'Enviar catÃ¡logos por DM', 'Agendar citas automÃ¡ticamente', 'Aumentar conversiones de ventas'],
+  en: ['Respond to Instagram DMs','Reply to comments automatically','Qualify leads','Send promotions','Schedule appointments','Support 24/7'],
+  es: ['Responder DMs de Instagram','Responder comentarios automaticamente','Calificar prospectos','Enviar promociones','Agendar citas','Soporte 24/7'],
 }
 
 const TONES = {
-  en: [{ value: 'friendly', label: 'ð Friendly & warm' },{ value: 'formal', label: 'ð Professional & formal' },{ value: 'casual', label: 'ð Casual & relatable' },{ value: 'sales', label: 'ð¯ Direct & sales-focused' }],
-  es: [{ value: 'friendly', label: 'ð Amigable y cÃ¡lido' },{ value: 'formal', label: 'ð Profesional y formal' },{ value: 'casual', label: 'ð Casual y cercano' },{ value: 'sales', label: 'ð© Directo y orientado a ventas' }],
+  en: [{value:'friendly',label:'Friendly'},{value:'formal',label:'Formal'},{value:'casual',label:'Casual'},{value:'sales',label:'Sales-focused'}],
+  es: [{value:'friendly',label:'Amigable'},{value:'formal',label:'Formal'},{value:'casual',label:'Casual'},{value:'sales',label:'Orientado a ventas'}],
 }
 
-export default function OnboardingPage({ params }: PageProps) {
-  const locale = params.locale === 'es' ? 'es' : 'en'; const loc = locale as 'en' | 'es'; const t = T[loc]
-  const router = useRouter(); const supabase = createClient()
-  const [step, setStep] = useState(0); const [saving, setSaving] = useState(false)
-  const [data, setData] = useState({ business_name: '', business_type: '', instagram_handle: '', phone: '', tone: 'friendly', goals?: [] as string[] })
-  function toggleGoal(goal: string) { setData(d => ({ ...d, goals: (d.goals??[]).includes(goal) ? (d.goals??[]).filter(g => g !== goal) : [...(d.goals??[]), goal] })) }
+const PLANS = [
+  {id:'free',name:'Free',price:'$0',features:['1 automation','100 conversations/mo','Basic analytics']},
+  {id:'starter',name:'Starter',price:'$29',features:['5 automations','1,000 conversations/mo','Advanced analytics']},
+  {id:'growth',name:'Growth',price:'$79',features:['20 automations','5,000 conversations/mo','AI agent','Priority support']},
+]
+
+export default function OnboardingPage({ params }: { params: { locale: string } }) {
+  const { locale } = params
+  const loc = (locale === 'es' ? 'es' : 'en') as 'en' | 'es'
+  const t = T[loc]
+  const router = useRouter()
+  const supabase = createClient()
+  const [step, setStep] = useState(1)
+  const [loading, setLoading] = useState(false)
+  const [form, setForm] = useState({
+    bizName: '', bizType: BIZ_TYPES[loc][0], instagram: '', phone: '',
+    tone: 'friendly', goals: [] as string[], plan: 'free',
+  })
+
+  function toggleGoal(g: string) {
+    setForm(f => ({ ...f, goals: f.goals.includes(g) ? f.goals.filter(x => x !== g) : [...f.goals, g] }))
+  }
+
   async function finish() {
-    setSaving(true)
+    setLoading(true)
     try {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { router.push(`/${locale}/login`); return }
-      await supabase.from('profiles').update({ business_name: data.business_name, onboarded: true }).eq('user_id', user.id)
-      try { await supabase.from('business_configs').upsert({ user_id: user.id, business_name: data.business_name, business_type: data.business_type, instagram_handle: data.instagram_handle, whatsapp_number: data.phone, ai_tone: data.tone, automation_goals: (data.goals??[]).join(', '), primary_language: locale }, { onConflict: 'user_id' }) } catch {}
-      router.push(`/${locale}/dashboard`)
-    } catch { toast.error('Something went wrong'); setSaving(false) }
+      if (!user) { router.push('/' + locale + '/login'); return }
+      await supabase.from('profiles').update({ business_name: form.bizName, plan: form.plan, updated_at: new Date().toISOString() }).eq('user_id', user.id)
+      await supabase.from('business_configs').upsert({
+        user_id: user.id, business_name: form.bizName, business_type: form.bizType,
+        instagram_handle: form.instagram || null, whatsapp_number: form.phone || null,
+        ai_tone: form.tone, automation_goals: form.goals.join(', '),
+        primary_language: loc, country: loc === 'es' ? 'CO' : 'US',
+        timezone: 'America/Bogota', faqs: [], offers: [], updated_at: new Date().toISOString(),
+      }, { onConflict: 'user_id' })
+      toast.success(loc === 'es' ? 'Cuenta configurada!' : 'Account set up!')
+      router.push('/' + locale + '/dashboard')
+    } catch { toast.error('Error saving') }
+    finally { setLoading(false) }
   }
-  const steps = [t.step1, t.step2, t.step3]
+
+  const inp = { background: 'var(--surface-2)', border: '1px solid var(--border-2)', color: 'var(--text)' }
+
   return (
-    <div className="min-h-screen flex items-center justify-center p-6" style={{ background: 'var(--bg)' }}>
-      <div className="w-ull max-w-lg">
-        <div className="flex items-center justify-center gap-2 mb-10"><div className="w-9 h-9 rounded-xl flex items-center justify-center text-white font-bold text-lg" style={{ background: 'var(--pink)' }}>J</div><span className="font-display font-bold text-2xl" style={{ color: 'var(--text)' }}>JUT</span></div>
-        <div className="flex items-center justify-center gap-2 mb-8">
-          {steps.map((s, i) => (
-            <div key={i} className="flex items-center gap-2">
-              <div className="flex items-center gap-1.5"><div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: i <= step ? 'var(--pink)' : 'var(--surface-2)', color: i <= step ? '#fff' : 'var(--text-3)' }}>{i < step ? <Check size={12} /> : i + 1}</div><span className="text-xs font-medium hidden sm:block" style={{ color: i === step ? 'var(--text)' : 'var(--text-3)' }}>{s}</span></div>
-              {i < steps.length - 1 && <div className="w8 h-Áx" style={{ background: i < step ? 'var(--pink)' : 'var(--border-2)' }} />}
+    <div className="min-h-screen flex items-center justify-center p-4" style={{background:'var(--bg)'}}>
+      <div className="w-full max-w-lg">
+        <div className="text-center mb-8">
+          <div className="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{background:'var(--pink)'}}>
+            <Zap size={22} className="text-white" />
+          </div>
+          <h1 className="font-display font-bold text-3xl mb-1" style={{color:'var(--text)'}}>{t.title}</h1>
+          <p className="text-sm" style={{color:'var(--text-3)'}}>{t.subtitle}</p>
+        </div>
+        <div className="flex items-center gap-2 mb-8 justify-center">
+          {[1,2,3].map(n => (
+            <div key={n} className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold"
+                style={{background:step>=n?'var(--pink)':'var(--surface)',color:step>=n?'#fff':'var(--text-3)',border:'1px solid '+(step>=n?'var(--pink)':'var(--border-2)')}}>
+                {n}
+              </div>
+              {n < 3 && <div className="w-12 h-0.5" style={{background:step>n?'var(--pink)':'var(--border-2)'}} />}
             </div>
           ))}
         </div>
-        <div className="rounded-2xl p-8" style={{ background: 'var(--surface)', border: '1px solid var(--border-2)' }}>
-          <h1 className="font-display font-bold text-2xl mb-1" style={{ color: 'var(--text)' }}>{t.title}</h1>
-          <p className="text-sm mb-8" style={{ color: 'var(--text-3)' }}>{t.subtitle}</p>
-          {step === 0 && (<div className="space-y-4">
-              <div><label className="block text-xs font-semibold mb-2" style={{ color: 'var(--text-2)' }}>{t.bizName}</label><input value={data.business_name} onChange={e => setData(d => ({ ...d, business_name: e.target.value }))} placeholder="StyleCo" className="input" /></div>
-              <div><label className="block text-xs font-semibold mb-2" style={{ color: 'var(--text-2)' }}>{t.bizType}</label><select value={data.business_type} onChange={e => setData(d => ({ ...d, business_type: e.target.value }))} className="input"><option value="">{loc === 'es' ? 'Selecciona...' : 'Select...'}</option>{BIZ_TYPES[loc].map(type => <option key={type} value={type}>{type}</option>)}</select></div>
-              <div><label className="block text-xs font-semibold mb-2" style={{ color: 'var(--text-2)' }}>{t.instagram}</label><div className="relative"><span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm" style={{ color: 'var(--text-3)' }}>@</span><input value={data.instagram_handle} onChange={e => setData(d => ({ ...d, instagram_handle: e.target.value.replace('@', '') }))} placeholder="mybusiness" className="input pl-8" /></div></div>
-              <div><label className="block text-xs font-semibold mb-2" style={{ color: 'var(--text-2)' }}>{t.phone}</label><input value={data.phone} onChange={e => setData(d => ({ ...d, phone: e.target.value }))} placeholder="+57 300 000 0000" className="input" /></div>
-            </div>)}
-          {step === 1 && (<div className="space-y-6">
-              <div><label className="block text-xs font-semibold mb-3" style={{ color: 'var(--text-2)' }}>{t.goals}</label><div className="grid grid-cols-1 gap-2">{GOALS[loc].map(goal => (<button key={goal} onClick={() => toggleGoal(goal)} className="flex items-center gap-3 p-3 rounded-xl text-sm text-left transition-all" style={{ background: (data.goals??[]).includes(goal) ? 'rgba(237,25,102,0.08)' : 'var(--surface-2)', border: `1px solid ${(data.goals??[]).includes(goal) ? 'rgba(237,25,102,0.3)' : 'var(--border-2)'}`, color: 'var(--text)' }}><div className="w-4 h-4 rounded flex items-center justify-center flex-shrink-0" style={{ background: (data.goals??[]).includes(goal) ? 'var(--pink)' : 'var(--surface-3)', border: `1px solid ${(data.goals??[]).includes(goal) ? 'var(--pink)' : 'var(--border-2)'}` }}>{(data.goals??[]).includes(goal) && <Check size={10} color="#fff" />}</div>{goal}</button>))}</div></div>
-              <div><label className="block text-xs font-semibold mb-3" style={{ color: 'var(--text-2)' }}>{t.tone}</label><div className="grid grid-cols-2 gap-2">{TONES[loc].map(({ value, label }) => (<button key={value} onClick={() => setData(d => ({ ...d, tone: value }))} className="p-3 rounded-xl text-sm text-left transition-all" style={{ background: data.tone === value ? 'rgba(237,25,102,0.08)' : 'var(--surface-2)', border: `1px solid ${data.tone === value ? 'rgba(237,25,102,0.3)' : 'var(--border-2)'}`, color: 'var(--text)' }}>{label}</button>))}</div></div>
-            </div>)}
-          {step === 2 && (<div className="space-y-3">{[{ slug: 'free', name: loc === 'es' ? 'Gratis' : 'Free', price: '$0', desc: '100 AI conv/mo', color: 'var(--text-3)' },{ slug: 'starter', name: 'Starter', price: loc === 'es' ? '$199.000/mes' : '$49/mo', desc: '1,000 conv/mo', color: '#4a90d9' },{ slug: 'growth', name: 'Growth', price: loc === 'es' ? '$399.000/mes' : '$97/mo', desc: '5,000 conv/mo', color: '#22c55e', featured: true },{ slug: 'elite', name: 'Elite', price: loc === 'es' ? '$1.190.000/mes' : '$297/mo', desc: 'Unlimited', color: 'var(--pink)' }].map(plan => (<button key={plan.slug} onClick={() => finish()} className="w-full flex items-center gap-4 p-4 rounded-xl text-left transition-all relative" style={{ background: 'var(--surface-2)', border: plan.featured ? '1px solid rgba(34,197,94,0.4)' : '1px solid var(--border-2)' }}><span className="font-bold text-sm" style={{ color: 'var(--text)' }}>{plan.name} <span style={{ color: plan.color }}>{plan.price}</span></span><ArrowRight size={14} style={{ color: 'var(--text-3)' }} /></button>))}</div>)}
-          <div className="flex items-center justify-between mt-8">
-            {step > 0 ? (<button onClick={() => setStep(s => s - 1)} className="flex items-center gap-2 text-sm font-medium" style={{ color: 'var(--text-2)' }}><ArrowLeft size={14} /> {t.back}</button>) : (<button onClick={() => router.push(`/${locale}/dashboard`)} className="text-sm" style={{ color: 'var(--text-3)' }}>{t.skip}</button>)}
-            {step < 2 ? (<button onClick={() => setStep(s => s + 1)} className="flex items-center gap-2 rounded-xl px-6 py-2.5 text-sm font-bold" style={{ background: 'var(--pink)', color: '#fff' }}>{t.next} <ArrowRight size={14} /></button>) : (<button onClick={finish} disabled={saving} className="flex items-center gap-2 rounded-xl px-6 py-2.5 text-sm font-bold" style={{ background: 'var(--pink)', color: '#fff', opacity: saving ? 0.7 : 1 }}>{saving ? <Loader2 size={14} className="animate-spin" /> : t.finish}</button>)}
-          </div>
+        <div className="rounded-2xl p-6 space-y-4" style={{background:'var(--surface)',border:'1px solid var(--border-2)'}}>
+          {step === 1 && (
+            <>
+              <h2 className="font-display font-bold text-lg" style={{color:'var(--text)'}}>{t.step1}</h2>
+              <div>
+                <label className="block text-xs font-semibold mb-1.5" style={{color:'var(--text-3)'}}>{t.bizName}</label>
+                <input value={form.bizName} onChange={e=>setForm(f=>({...f,bizName:e.target.value}))} className="w-full rounded-xl px-4 py-2.5 text-sm outline-none" style={inp} />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold mb-1.5" style={{color:'var(--text-3)'}}>{t.bizType}</label>
+                <select value={form.bizType} onChange={e=>setForm(f=>({...f,bizType:e.target.value}))} className="w-full rounded-xl px-4 py-2.5 text-sm outline-none" style={inp}>
+                  {BIZ_TYPES[loc].map(b=><option key={b}>{b}</option>)}
+                </select>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold mb-1.5" style={{color:'var(--text-3)'}}>{t.instagram}</label>
+                  <input value={form.instagram} onChange={e=>setForm(f=>({...f,instagram:e.target.value}))} placeholder="@handle" className="w-full rounded-xl px-4 py-2.5 text-sm outline-none" style={inp} />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold mb-1.5" style={{color:'var(--text-3)'}}>{t.phone}</label>
+                  <input value={form.phone} onChange={e=>setForm(f=>({...f,phone:e.target.value}))} placeholder="+57..." className="w-full rounded-xl px-4 py-2.5 text-sm outline-none" style={inp} />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold mb-1.5" style={{color:'var(--text-3)'}}>{t.tone}</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {TONES[loc].map(({value,label}) => (
+                    <button key={value} onClick={()=>setForm(f=>({...f,tone:value}))}
+                      className="py-2 rounded-lg text-sm font-medium transition-all"
+                      style={{background:form.tone===value?'var(--pink)':'var(--surface-2)',color:form.tone===value?'#fff':'var(--text-2)',border:'1px solid '+(form.tone===value?'var(--pink)':'var(--border)')}}>
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+          {step === 2 && (
+            <>
+              <h2 className="font-display font-bold text-lg" style={{color:'var(--text)'}}>{t.step2}</h2>
+              <p className="text-sm" style={{color:'var(--text-3)'}}>{t.goals}</p>
+              <div className="grid grid-cols-2 gap-2">
+                {GOALS[loc].map(g => (
+                  <button key={g} onClick={()=>toggleGoal(g)}
+                    className="py-2.5 px-3 rounded-xl text-xs font-medium text-left transition-all"
+                    style={{background:form.goals.includes(g)?'rgba(237,25,102,0.1)':'var(--surface-2)',color:form.goals.includes(g)?'var(--pink)':'var(--text-2)',border:'1px solid '+(form.goals.includes(g)?'rgba(237,25,102,0.3)':'var(--border)')}}>
+                    {g}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+          {step === 3 && (
+            <>
+              <h2 className="font-display font-bold text-lg" style={{color:'var(--text)'}}>{t.step3}</h2>
+              <div className="space-y-3">
+                {PLANS.map(plan => (
+                  <button key={plan.id} onClick={()=>setForm(f=>({...f,plan:plan.id}))}
+                    className="w-full p-4 rounded-xl text-left transition-all"
+                    style={{background:form.plan===plan.id?'rgba(237,25,102,0.08)':'var(--surface-2)',border:'2px solid '+(form.plan===plan.id?'var(--pink)':'var(--border)')}}>
+                    <div className="flex justify-between items-start mb-1">
+                      <span className="font-bold text-sm" style={{color:'var(--text)'}}>{plan.name}</span>
+                      <span className="font-bold text-sm" style={{color:'var(--pink)'}}>{plan.price}/mo</span>
+                    </div>
+                    {plan.features.map(f=><p key={f} className="text-xs" style={{color:'var(--text-3)'}}>- {f}</p>)}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+        <div className="flex items-center justify-between mt-4">
+          <button onClick={()=>step>1?setStep(s=>s-1):router.push('/'+locale+'/dashboard')}
+            className="flex items-center gap-1.5 text-sm font-medium" style={{color:'var(--text-3)'}}>
+            <ChevronLeft size={15} />{step > 1 ? t.back : t.skip}
+          </button>
+          {step < 3 ? (
+            <button onClick={()=>setStep(s=>s+1)} className="flex items-center gap-2 rounded-xl px-6 py-2.5 text-sm font-bold" style={{background:'var(--pink)',color:'#fff'}}>
+              {t.next} <ChevronRight size={14} />
+            </button>
+          ) : (
+            <button onClick={finish} disabled={loading} className="flex items-center gap-2 rounded-xl px-6 py-2.5 text-sm font-bold" style={{background:'var(--pink)',color:'#fff',opacity:loading?0.7:1}}>
+              {loading ? <Loader2 size={14} className="animate-spin" /> : <Zap size={14} />}{t.finish}
+            </button>
+          )}
         </div>
       </div>
     </div>
