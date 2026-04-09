@@ -1,10 +1,10 @@
 // ============================================================
-// JUT — Core Type Definitions
+// JUT â Core Type Definitions
 // ============================================================
 
 export type Locale = 'en' | 'es'
 
-// ── Auth / Users ─────────────────────────────────────────────
+// ââ Auth / Users âââââââââââââââââââââââââââââââââââââââââââââ
 
 export interface UserProfile {
   id: string
@@ -21,7 +21,7 @@ export interface UserProfile {
 
 export type PlanType = 'free' | 'starter' | 'growth' | 'elite'
 
-// ── Business Configuration ────────────────────────────────────
+// ââ Business Configuration ââââââââââââââââââââââââââââââââââââ
 
 export interface BusinessConfig {
   id: string
@@ -63,7 +63,7 @@ export interface Offer {
   currency: 'USD' | 'COP'
 }
 
-// ── Leads / CRM ───────────────────────────────────────────────
+// ââ Leads / CRM âââââââââââââââââââââââââââââââââââââââââââââââ
 
 export interface Lead {
   id: string
@@ -108,7 +108,7 @@ export interface LeadActivity {
   created_by: string | null
 }
 
-// ── Conversations ─────────────────────────────────────────────
+// ââ Conversations âââââââââââââââââââââââââââââââââââââââââââââ
 
 export interface Conversation {
   id: string
@@ -145,7 +145,7 @@ export interface Message {
   created_at: string
 }
 
-// ── Automations ───────────────────────────────────────────────
+// ââ Automations âââââââââââââââââââââââââââââââââââââââââââââââ
 
 export interface Automation {
   id: string
@@ -220,7 +220,7 @@ export interface AutomationRun {
   error: string | null
 }
 
-// ── Social Triggers ───────────────────────────────────────────
+// ââ Social Triggers âââââââââââââââââââââââââââââââââââââââââââ
 
 export interface SocialTrigger {
   id: string
@@ -239,7 +239,7 @@ export interface SocialTrigger {
   updated_at: string
 }
 
-// ── Sales / POS ───────────────────────────────────────────────
+// ââ Sales / POS âââââââââââââââââââââââââââââââââââââââââââââââ
 
 export interface Product {
   id: string
@@ -288,7 +288,7 @@ export interface OrderItem {
   total: number
 }
 
-// ── AI / Agent ────────────────────────────────────────────────
+// ââ AI / Agent ââââââââââââââââââââââââââââââââââââââââââââââââ
 
 export interface AIRun {
   id: string
@@ -305,7 +305,7 @@ export interface AIRun {
   created_at: string
 }
 
-// ── Analytics ─────────────────────────────────────────────────
+// ââ Analytics âââââââââââââââââââââââââââââââââââââââââââââââââ
 
 export interface AnalyticsSummary {
   total_leads: number
@@ -318,7 +318,7 @@ export interface AnalyticsSummary {
   conversion_rate: number
 }
 
-// ── Integrations ──────────────────────────────────────────────
+// ââ Integrations ââââââââââââââââââââââââââââââââââââââââââââââ
 
 export interface Integration {
   id: string
@@ -333,7 +333,7 @@ export interface Integration {
   updated_at: string
 }
 
-// ── API Response ──────────────────────────────────────────────
+// ââ API Response ââââââââââââââââââââââââââââââââââââââââââââââ
 
 export interface ApiResponse<T = unknown> {
   data: T | null
