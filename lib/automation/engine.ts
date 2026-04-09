@@ -7,37 +7,21 @@ export interface TriggerPayload {
   data: Record<string, unknown>
 }
 
-export interface InstagramCommentEvent {
-  postId: string
-  commentId: string
-  userId: string
-  text: string
-  username: string
-}
-
-export interface InstagramDMEvent {
-  senderId: string
-  userId: string
-  text: string
-  username: string
-}
-
-export function createInstagramCommentEvent(data: Partial<InstagramCommentEvent>): InstagramCommentEvent {
+export function createInstagramCommentEvent(postId: string, text: string, handle: string) {
   return {
-    postId: data.postId ?? '',
-    commentId: data.commentId ?? '',
-    userId: data.userId ?? '',
-    text: data.text ?? '',
-    username: data.username ?? '',
+    type: 'instagram_comment',
+    platform: 'instagram',
+    payload: { post_id: postId, text, commenter_handle: handle, commenter_name: handle },
+    timestamp: new Date().toISOString(),
   }
 }
 
-export function createInstagramDMEvent(data: Partial<InstagramDMEvent>): InstagramDMEvent {
+export function createInstagramDMEvent(userId: string, handle: string, text: string) {
   return {
-    senderId: data.senderId ?? '',
-    userId: data.userId ?? '',
-    text: data.text ?? '',
-    username: data.username ?? '',
+    type: 'instagram_dm',
+    platform: 'instagram',
+    payload: { sender_id: userId, sender_handle: handle, text },
+    timestamp: new Date().toISOString(),
   }
 }
 
@@ -46,33 +30,23 @@ export async function processTrigger(payload: TriggerPayload): Promise<Execution
   const results: ExecutionResult[] = []
   try {
     const { data: automations } = await supabase
-      .from('automations')
-      .select('*')
-      .eq('user_id', payload.userId)
-      .eq('status', 'active')
+      .from('automations').select('*')
+      .eq('user_id', payload.userId).eq('status', 'active')
     if (!automations?.length) return results
     for (const automation of automations) {
       const trigger = automation.trigger ?? {}
       if (trigger.type !== payload.type) continue
-      const ctx: ExecutionContext = {
-        userId: payload.userId,
-        automationId: automation.id,
-        triggerData: payload.data,
-      }
+      const ctx: ExecutionContext = { userId: payload.userId, automationId: automation.id, triggerData: payload.data }
       const result = await executeAutomation(ctx)
       results.push(result)
       await supabase.from('automation_runs').insert({
-        automation_id: automation.id,
-        trigger_data: payload.data,
+        automation_id: automation.id, trigger_data: payload.data,
         status: result.success ? 'completed' : 'failed',
-        started_at: new Date().toISOString(),
-        completed_at: new Date().toISOString(),
+        started_at: new Date().toISOString(), completed_at: new Date().toISOString(),
         error: result.error ?? null,
       })
     }
-  } catch (err) {
-    console.error('[engine] Error processing trigger:', err)
-  }
+  } catch (err) { console.error('[engine] processTrigger error:', err) }
   return results
 }
 
@@ -81,12 +55,7 @@ export async function runPendingAutomations(): Promise<void> {
   const { data: scheduled } = await supabase.from('automations').select('*').eq('status', 'active')
   if (!scheduled?.length) return
   for (const auto of scheduled) {
-    const trigger = auto.trigger ?? {}
-    if (trigger.type !== 'schedule') continue
-    await processTrigger({
-      type: 'schedule',
-      userId: auto.user_id,
-      data: { automation_id: auto.id, scheduled_at: new Date().toISOString() },
-    })
+    if ((auto.trigger ?? {}).type !== 'schedule') continue
+    await processTrigger({ type: 'schedule', userId: auto.user_id, data: { automation_id: auto.id, scheduled_at: new Date().toISOString() } })
   }
 }
