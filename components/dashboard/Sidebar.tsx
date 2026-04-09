@@ -19,14 +19,14 @@ interface SidebarProps {
 const NAV_EN = {
   dashboard: 'Dashboard', leads: 'Leads', conversations: 'Conversations',
   automations: 'Automations', social: 'Social Triggers', sales: 'Sales',
-  agent: 'AI Agent', creative: 'Creative AI',
   analytics: 'Analytics', settings: 'Settings', help: 'Help & Support',
+  creative: 'Creative AI', agent: 'AI Agent',
 }
 const NAV_ES = {
   dashboard: 'Dashboard', leads: 'Leads', conversations: 'Conversaciones',
   automations: 'Automatizaciones', social: 'Triggers Sociales', sales: 'Ventas',
-  agent: 'Agente IA', creative: 'IA Creativa',
   analytics: 'Analítica', settings: 'Ajustes', help: 'Ayuda',
+  creative: 'IA Creativa', agent: 'Agente IA',
 }
 
 const NAV_ITEMS = [
@@ -105,7 +105,7 @@ export function Sidebar({ locale, userName, userPlan = 'free', userRole = 'user'
               </span>
             </div>
             <p className="text-xs mb-3" style={{ color: 'var(--text-3)' }}>
-              {locale === 'es' ? 'Desbloquea automatizaciones y conversaciones ilimitadas.' : 'Unlock unlimited automations and AI conversations.'}
+              {locale === 'es' ? 'Desbloquea automatizaciones ilimitadas.' : 'Unlock unlimited automations and AI conversations.'}
             </p>
             <Link href={`/${locale}/settings`} className="btn-primary text-xs px-3 py-1.5 w-full text-center block">
               {locale === 'es' ? 'Mejorar ahora' : 'Upgrade now'}
