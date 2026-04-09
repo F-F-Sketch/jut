@@ -1,85 +1,229 @@
-import React from 'react'
 'use client'
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { User, Lock, Plug, CreditCard, Webhook, Save, Loader2, Check, Plus, Trash2, Copy, Eye, EyeOff } from 'lucide-react'
 import toast from 'react-hot-toast'
 
-const EVENTS = ['instagram_comment','instagram_dm','lead_captured','lead_qualified','automation_fired','conversation_started','order_placed']
-
 export default function SettingsPage({ params }: { params: { locale: string } }) {
-  const locale = params.locale === 'es' ? 'es' : 'en'
+  const { locale } = params
   const supabase = createClient()
   const [tab, setTab] = useState('profile')
+  const [profile, setProfile] = useState<any>(null)
   const [saving, setSaving] = useState(false)
-  const [profile, setProfile] = useState({ full_name: '', email: '', currency: 'COP', locale })
-  const [passwords, setPasswords] = useState({ new: '', confirm: '' })
-  const [showPass, setShowPass] = useState(false)
+  const [saved, setSaved] = useState(false)
+  const [showKey, setShowKey] = useState(false)
+  const [webhookUrl, setWebhookUrl] = useState('')
   const [webhooks, setWebhooks] = useState<any[]>([])
-  const [newWh, setNewWh] = useState({ name: '', url: '', events: [] as string[] })
-  const [addingWh, setAddingWh] = useState(false)
-  useEffect(() => { loadData() }, [])
-  async function loadData() {
-    try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
-      const { data: p } = await supabase.from('profiles').select('*').eq('user_id', user.id).single()
-      if (p) setProfile({ full_name: p.full_name ?? '', email: user.email ?? '', currency: p.currency ?? 'COP', locale: p.locale ?? locale })
-      const { data: wh } = await supabase.from('user_webhooks').select('*').order('created_at').catch(() => ({ data: null }))
-      setWebhooks(wh ?? [])
-    } catch {}
+
+  useEffect(() => { loadProfile() }, [])
+
+  async function loadProfile() {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+    const { data } = await supabase.from('profiles').select('*').eq('user_id', user.id).single()
+    if (data) setProfile(data)
+    const { data: hooks } = await supabase.from('webhooks').select('*').eq('user_id', user.id)
+    setWebhooks(hooks ?? [])
   }
+
   async function saveProfile() {
+    if (!profile) return
     setSaving(true)
-    try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
-      await supabase.from('profiles').update({ full_name: profile.full_name, currency: profile.currency, locale: profile.locale }).eq('user_id', user.id)
-      toast.success(locale === 'es' ? 'Perfil guardado' : 'Profile saved')
-    } catch { toast.error('Error') }
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user) {
+      await supabase.from('profiles').update({
+        full_name: profile.full_name,
+        business_name: profile.business_name,
+        locale: profile.locale,
+        currency: profile.currency,
+      }).eq('user_id', user.id)
+      setSaved(true)
+      setTimeout(() => setSaved(false), 2000)
+      toast.success(locale === 'es' ? 'Guardado' : 'Saved')
+    }
     setSaving(false)
   }
-  async function changePassword() {
-    if (passwords.new !== passwords.confirm) { toast.error(locale === 'es' ? 'Las contraseÃÂ±as no coinciden' : "Passwords don't match"); return }
-    if (passwords.new.length < 6) { toast.error('Min 6 characters'); return }
-    setSaving(true)
-    const { error } = await supabase.auth.updateUser({ password: passwords.new })
+
+  async function changePassword(current: string, next: string) {
+    const { error } = await supabase.auth.updateUser({ password: next })
     if (error) toast.error(error.message)
-    else { toast.success(locale === 'es' ? 'ContraseÃÂ±a actualizada' : 'Password updated'); setPasswords({ new: '', confirm: '' }) }
-    setSaving(false)
+    else toast.success(locale === 'es' ? 'Contrasena actualizada' : 'Password updated')
   }
+
   async function addWebhook() {
-    if (!newWh.name || !newWh.url || !newWh.events.length) { toast.error('Name, URL and at least one event required'); return }
-    setAddingWh(true)
-    const secret = `wh_${Math.random().toString(36).slice(2,18)}`
-    const { data, error } = await supabase.from('user_webhooks').insert({ name: newWh.name, url: newWh.url, events: newWh.events, secret, is_active: true }).select().single()
-    if (error) { toast.error(error.message); setAddingWh(false); return }
-    setWebhooks(p => [...p, data]); setNewWh({ name: '', url: '', events: [] })
-    toast.success(locale === 'es' ? 'Webhook creado' : 'Webhook created'); setAddingWh(false)
+    if (!webhookUrl.trim()) return
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+    const { data } = await supabase.from('webhooks').insert({ user_id: user.id, url: webhookUrl, events: ['lead_captured','sale','automation_fired'], active: true }).select().single()
+    if (data) { setWebhooks(prev => [...prev, data]); setWebhookUrl('') }
   }
+
   async function deleteWebhook(id: string) {
-    await supabase.from('user_webhooks').delete().eq('id', id)
-    setWebhooks(p => p.filter(w => w.id !== id))
-    toast.success(locale === 'es' ? 'Eliminado' : 'Deleted')
+    await supabase.from('webhooks').delete().eq('id', id)
+    setWebhooks(prev => prev.filter(w => w.id !== id))
   }
-  async function testWebhook(wh: any) {
-    try {
-      const res = await fetch(wh.url, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-JUT-Event': 'test', 'X-JUT-Secret': wh.secret ?? '' }, body: JSON.stringify({ event_type: 'test', message: 'JUT webhook test', timestamp: new Date().toISOString() }) })
-      res.ok ? toast.success(`Sent Ã¢ÂÂ ${res.status}`) : toast.error(`Status ${res.status}`)
-    } catch { toast.error('Could not reach URL') }
-  }
-  const TABS = [{ key: 'profile', label: locale === 'es' ? 'Perfil' : 'Profile', icon: User },{ key: 'security', label: locale === 'es' ? 'Seguridad' : 'Security', icon: Lock },{ key: 'integrations', label: locale === 'es' ? 'Integraciones' : 'Integrations', icon: Plug },{ key: 'billing', label: locale === 'es' ? 'FacturaciÃÂ³n' : 'Billing', icon: CreditCard },{ key: 'webhooks', label: 'Webhooks', icon: Webhook }]
+
+  const TABS = [
+    { key: 'profile', label: locale === 'es' ? 'Perfil' : 'Profile', icon: User },
+    { key: 'security', label: locale === 'es' ? 'Seguridad' : 'Security', icon: Lock },
+    { key: 'integrations', label: locale === 'es' ? 'Integraciones' : 'Integrations', icon: Plug },
+    { key: 'billing', label: locale === 'es' ? 'Facturacion' : 'Billing', icon: CreditCard },
+    { key: 'webhooks', label: 'Webhooks', icon: Webhook },
+  ]
+
   return (
     <div className="p-8 max-w-4xl mx-auto space-y-6">
-      <div><h1 className="font-display font-bold text-3xl mb-1" style={{color:'var(--text)'}}>{locale==='es'?'Ajustes':'Settings'}</h1><p className="text-sm" style={{color:'var(--text-3)'}}>{locale==='es'?'Gestiona tu cuenta':'Manage your account'}</p></div>
-      <div className="flex gap-1 p-1 rounded-xl overflow-x-auto" style={{background:'var(--surface)',border:'1px solid var(--border-2)'}}>
-        {TABS.map(({key,label,icon:Icon})=>(<button key={key} onClick={()=>setTab(key)} className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all flex-shrink-0" style={{background:tab===key?'var(--surface-2)':'transparent',color:tab===key?'var(--text)':'var(--text-3)',border:tab===key?'1px solid var(--border-2)':'1px solid transparent'}}><Icon size={14} /><span>{label}</span></button>))}
+      <div>
+        <h1 className="font-display font-bold text-3xl mb-1" style={{color:'var(--text)'}}>
+          {locale === 'es' ? 'Ajustes' : 'Settings'}
+        </h1>
+        <p className="text-sm" style={{color:'var(--text-3)'}}>
+          {locale === 'es' ? 'Gestiona tu cuenta' : 'Manage your account'}
+        </p>
       </div>
-      {tab==='profile'&&(<div className="rounded-2xl p-6 space-y-5" style={{background:'var(--surface)',border:'1px solid var(--border-2)'}}><h2 className="font-display font-bold text-base" style={{color:'var(--text)'}}>{locale==='es'?'InformaciÃÂ³n Personal':'Personal Information'}</h2><div className="grid grid-cols-1 md:grid-cols-2 gap-4">{[{label:locale==='es'?'Nombre completo':'Full name',field:'full_name',type:'text',disabled:false},{label:locale==='es'?'Correo':'Email',field:'email',type:'email',disabled:true}].map(({label,field,type,disabled})=>(<div key={field}><label className="block text-xs font-semibold mb-2" style={{color:'var(--text-2)'}}>{label}</label><input type={type} value={(profile as any)[field]} disabled={disabled} onChange={e=>setProfile(p=>({...p,[field]:e.target.value}))} className={`input ${disabled?'opacity-50 cursor-not-allowed':''}`} /></div>))}<div><label className="block text-xs font-semibold mb-2" style={{color:'var(--text-2)'}}>{locale==='es'?'Moneda':'Currency'}</label><select value={profile.currency} onChange={e=>setProfile(p=>({...p,currency:e.target.value}))} className="input"><option value="COP">COP</option><option value="USD">USD</option></select></div><div><label className="block text-xs font-semibold mb-2" style={{color:'var(--text-2)'}}>{locale==='es'?'Idioma':'Language'}</label><select value={profile.locale} onChange={e=>setProfile(p=>({...p,locale:e.target.value}))} className="input"><option value="es">EspaÃÂ±ol</option><option value="en">English</option></select></div></div><button onClick={saveProfile} disabled={saving} className="flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold" style={{background:'var(--pink)',color:'#fff',opacity:saving?0.7:1}}>{saving?<Loader2 size={14} className="animate-spin" />:<Save size={14} />}{locale==='es'?'Guardar':'Save changes'}</button></div>))}
-      {tab==='security'&&(<div className="rounded-2xl p-6 space-y-5" style={{background:'var(--surface)',border:'1px solid var(--border-2)'}}><h2 className="font-display font-bold text-base" style={{color:'var(--text)'}}>{locale==='es'?'Cambiar ContraseÃÂ±a':'Change Password'}</h2><div className="space-y-4 max-w-md">{(['new','confirm'] as const).map(f=>(<div key={f}><label className="block text-xs font-semibold mb-2" style={{color:'var(--text-2)'}}>{f==='new'?(locale==='es'?'Nueva contraseÃÂ±a':'New password'):(locale==='es'?'Confirmar':'Confirm')}</label><div className="relative"><input type={showPass?'text':'password'} value={passwords[f]} onChange={e=>setPasswords(p=>({...p,[f]:e.target.value}))} className="input pr-10" placeholder="Ã¢ÂÂ¢Ã¢ÂÂ¢Ã¢ÂÂ¢Ã¢ÂÂ¢Ã¢ÂÂ¢Ã¢ÂÂ¢Ã¢ÂÂ¢Ã¢ÂÂ¢" />{f==='new'&&(<button type="button" onClick={()=>setShowPass(!showPass)} className="absolute right-3 top-1/2 -translate-y-1/2" style={{color:'var(--text-3)'}}>{showPass?<EyeOff size={15} />:<Eye size={15} />}</button>)}</div></div>))}<button onClick={changePassword} disabled={saving} className="flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold" style={{background:'var(--pink)',color:'#fff',opacity:saving?0.7:1}}>{saving?<Loader2 size={14} className="animate-spin" />:<Check size={14} />}{locale==='es'?'Actualizar contraseÃÂ±a':'Update password'}</button></div></div>))}
-      {tab==='integrations'&&(<div className="space-y-4">{[{name:'Instagram',icon:'Ã°ÂÂÂ¸',desc:locale==='es'?'Conecta tu cuenta para capturar comentarios y enviar DMs automÃÂ¡ticos':'Connect to capture comments and send automated DMs'},{name:'WhatsApp Business',icon:'Ã°ÂÂÂ¬',desc:locale==='es'?'EnvÃÂa mensajes automÃÂ¡ticos por WhatsApp':'Send automated WhatsApp messages'}].map(({name,icon,desc})=>(<div key={name} className="rounded-2xl p-5 flex items-center gap-4" style={{background:'var(--surface)',border:'1px solid var(--border-2)'}}><span className="text-2xl">{icon}</span><div className="flex-1"><p className="font-bold text-sm" style={{color:'var(--text)'}}>{name}</p><p className="text-xs" style={{color:'var(--text-3)'}}>{desc}</p></div><span className="text-xs px-3 py-1.5 rounded-full font-medium" style={{background:'rgba(96,96,128,0.15)',color:'var(--text-3)'}}>{locale==='es'?'PrÃÂ³ximamente':'Coming soon'}</span></div>))}</div>)}
-      {tab==='billing'&&(<div className="rounded-2xl p-6" style={{background:'var(--surface)',border:'|px solid var(--border-2)'}}><h2 className="font-display font-bold text-base mb-4" style={{color:'var(--text)'}}>{locale==='es'?'Tu Plan':'Your Plan'}</h2><div className="grid grid-cols-1 md:grid-cols-2 gap-4">{[{slug:'growth',price:locale==='es'?'$399.000/mes':'$97/mo',name:'Growth',featured:true},{slug:'elite',price:locale==='es'?'$1.190.000/mes':'$297/mo',name:'Elite'}].map(p=>(<div key={p.slug} className="rounded-xl p-4" style={{background:'var(--surface-2)',border:(p as any).featured?'1px solid rgba(237,25,102,0.4)':'1px solid var(--border-2)'}}><p className="font-bold text-sm mb-1" style={{color:'var(--text)'}}>{p.name}</p><p className="text-lg font-bold" style={{color:'var(--pink)'}}>{p.price}</p><button className="mt-3 w-full text-xs py-2 rounded-lg font-bold" style={{background:'var(--pink)',color:'#fff'}}>{locale==='es'?'Actualizar':'Upgrade'}</button></div>))}</div></div>))}
-      {tab==='webhooks'&&(<div className="space-y-5"><div className="rounded-2xl p-4" style={{background:'rgba(74,144,217,0.08)',border:'1px solid rgba(74,144,217,0.2)'}}><p className="font-semibold text-sm" style={{color:'#4a90d9'}}>Ã°ÂÂÂ style={{color:'#4a90d9'}}>{locale==='es'?'Conecta JUT con n8n, Zapier y mÃÂ¡s':'Connect JUT with n8n, Zapier and more'}</p><p className="text-xs mt-1" style={{color:'var(--text-3)'}}>{locale==='es'?'JUT enviarÃÂ¡ datos a tu URL cuando ocurran eventos.':'JUT sends data to your URL when events happen.'}</p></div><div className="rounded-2xl p-6 space-y-4" style={{background:'var(--surface)',border:'1px solid var(--border-2)'}}><h2 className="font-display font-bold text-base" style={{color:'var(--text)'}}>{locale==='es'?'Nuevo Webhook':'New Webhook'}</h2><div className="grid grid-cols-1 md:grid-cols-2 gap-4"><div><label className="block text-xs font-semibold mb-2" style={{color:'var(--text-2)'}}>{lcale==='es'?'Nombre':'Name'}</label><input value={newWh.name} onChange={e=>setNewWh(p=>({...p,name:e.target.value}))} placeholder="n8n Production" className="input" /></div><div><label className="block text-xs font-semibold mb-2" style={{color:'var(--text-2)'}}>URL</label><input value={newWh.url} onChange={e=>setNewWh(p=>({...p,url:e.target.value}))} placeholder="https://..." className="input" /></div></div><div><label className="block text-xs font-semibold mb-2" style={{color:'var(--text-2)'}}>{locale==='es'?'Eventos':'Events'}</label><div className="flex flex-wrap gap-2">{EVENTS.map(ev=>(<button key={ev} onClick={()=>setNewWh(p=>({...p,events:p.events.includes(ev)?p.events.filter(x=>x!}Ã==ev):[...p.events,ev]}))} className="text-xs px-3 py-1.5 rounded-lg font-medium transition-all" style={{background:newWh.events.includes(ev)?'rgba(237,25,102,0.1)':'var(--surface-2)',color:newWh.events.includes(ev)?'var(--pink)':'var(--text-3)',border:`1px solid ${newWh.events.includes(ev)?'rgba(237,25,102,0.3)':'var(--border-2)'}`}}>{ev.replace(/_/g,' ')}</button>))}</div></div><button onClick={addWebhook} disabled={addingWh} className="flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold" style={{background:'var(--pink)',color:'#fff',opacity:addingWh?@.7:1}}>{addingWh'?<Loader2 size={14} className="animate-spin" />:<Plus size={14} />}{locale==='es'?'Agregar':'Add Webhook'}</button></div></div>))}
+
+      <div className="flex gap-1 p-1 rounded-xl overflow-x-auto" style={{background:'var(--surface)',border:'1px solid var(--border-2)'}}>
+        {TABS.map(({key, label, icon: Icon}) => (
+          <button key={key} onClick={() => setTab(key)}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all flex-shrink-0"
+            style={{
+              background: tab === key ? 'var(--surface-2)' : 'transparent',
+              color: tab === key ? 'var(--text)' : 'var(--text-3)',
+              border: tab === key ? '1px solid var(--border-2)' : '1px solid transparent',
+            }}>
+            <Icon size={14} /><span>{label}</span>
+          </button>
+        ))}
+      </div>
+
+      {tab === 'profile' && (
+        <div className="rounded-2xl p-6 space-y-4" style={{background:'var(--surface)',border:'1px solid var(--border-2)'}}>
+          <h2 className="font-display font-bold text-base" style={{color:'var(--text)'}}>
+            {locale === 'es' ? 'Informacion personal' : 'Personal information'}
+          </h2>
+          {[
+            {key:'full_name',label:locale==='es'?'Nombre completo':'Full name',type:'text'},
+            {key:'business_name',label:locale==='es'?'Nombre del negocio':'Business name',type:'text'},
+          ].map(({key,label,type}) => (
+            <div key={key}>
+              <label className="block text-xs font-medium mb-1.5" style={{color:'var(--text-3)'}}>{label}</label>
+              <input type={type} value={profile?.[key] ?? ''} onChange={e => setProfile((p: any) => ({...p,[key]:e.target.value}))}
+                className="w-full rounded-xl px-4 py-2.5 text-sm outline-none" style={{background:'var(--surface-2)',border:'1px solid var(--border-2)',color:'var(--text)'}} />
+            </div>
+          ))}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-medium mb-1.5" style={{color:'var(--text-3)'}}>Language</label>
+              <select value={profile?.locale ?? 'en'} onChange={e => setProfile((p: any) => ({...p,locale:e.target.value}))}
+                className="w-full rounded-xl px-4 py-2.5 text-sm outline-none" style={{background:'var(--surface-2)',border:'1px solid var(--border-2)',color:'var(--text)'}}>
+                <option value="en">English</option>
+                <option value="es">Espanol</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-medium mb-1.5" style={{color:'var(--text-3)'}}>Currency</label>
+              <select value={profile?.currency ?? 'USD'} onChange={e => setProfile((p: any) => ({...p,currency:e.target.value}))}
+                className="w-full rounded-xl px-4 py-2.5 text-sm outline-none" style={{background:'var(--surface-2)',border:'1px solid var(--border-2)',color:'var(--text)'}}>
+                <option value="USD">USD $</option>
+                <option value="COP">COP $</option>
+              </select>
+            </div>
+          </div>
+          <button onClick={saveProfile} disabled={saving}
+            className="flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold transition-all"
+            style={{background:'var(--pink)',color:'#fff',opacity:saving?0.7:1}}>
+            {saving ? <Loader2 size={14} className="animate-spin" /> : saved ? <Check size={14} /> : <Save size={14} />}
+            {saved ? (locale==='es'?'Guardado!':'Saved!') : (locale==='es'?'Guardar cambios':'Save changes')}
+          </button>
+        </div>
+      )}
+
+      {tab === 'security' && (
+        <div className="rounded-2xl p-6 space-y-4" style={{background:'var(--surface)',border:'1px solid var(--border-2)'}}>
+          <h2 className="font-display font-bold text-base" style={{color:'var(--text)'}}>
+            {locale === 'es' ? 'Cambiar contrasena' : 'Change password'}
+          </h2>
+          <PasswordForm locale={locale} onSave={changePassword} />
+        </div>
+      )}
+
+      {tab === 'integrations' && (
+        <div className="rounded-2xl p-6 space-y-4" style={{background:'var(--surface)',border:'1px solid var(--border-2)'}}>
+          <h2 className="font-display font-bold text-base" style={{color:'var(--text)'}}>Integrations</h2>
+          <p className="text-sm" style={{color:'var(--text-3)'}}>
+            {locale === 'es' ? 'Conecta tus plataformas' : 'Connect your platforms'}
+          </p>
+          {['Instagram','WhatsApp','Facebook'].map(name => (
+            <div key={name} className="flex items-center justify-between p-4 rounded-xl" style={{background:'var(--surface-2)',border:'1px solid var(--border)'}}>
+              <span className="text-sm font-medium" style={{color:'var(--text)'}}>{name}</span>
+              <span className="text-xs px-2 py-0.5 rounded-full" style={{background:'rgba(96,96,128,0.15)',color:'var(--text-3)'}}>
+                {locale === 'es' ? 'No conectado' : 'Not connected'}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {tab === 'billing' && (
+        <div className="rounded-2xl p-6 space-y-4" style={{background:'var(--surface)',border:'1px solid var(--border-2)'}}>
+          <h2 className="font-display font-bold text-base" style={{color:'var(--text)'}}>
+            {locale === 'es' ? 'Plan y facturacion' : 'Plan & billing'}
+          </h2>
+          <div className="p-4 rounded-xl" style={{background:'var(--surface-2)',border:'1px solid var(--border)'}}>
+            <p className="text-sm font-semibold" style={{color:'var(--text)'}}>
+              {locale === 'es' ? 'Plan actual' : 'Current plan'}: <span style={{color:'var(--pink)'}}>{profile?.plan ?? 'Free'}</span>
+            </p>
+          </div>
+        </div>
+      )}
+
+      {tab === 'webhooks' && (
+        <div className="rounded-2xl p-6 space-y-4" style={{background:'var(--surface)',border:'1px solid var(--border-2)'}}>
+          <h2 className="font-display font-bold text-base" style={{color:'var(--text)'}}>Webhooks</h2>
+          <div className="flex gap-3">
+            <input value={webhookUrl} onChange={e => setWebhookUrl(e.target.value)} placeholder="https://your-endpoint.com/webhook"
+              className="flex-1 rounded-xl px-4 py-2.5 text-sm outline-none" style={{background:'var(--surface-2)',border:'1px solid var(--border-2)',color:'var(--text)'}} />
+            <button onClick={addWebhook} className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold" style={{background:'var(--pink)',color:'#fff'}}>
+              <Plus size={14} /> Add
+            </button>
+          </div>
+          {webhooks.map(w => (
+            <div key={w.id} className="flex items-center justify-between p-4 rounded-xl" style={{background:'var(--surface-2)',border:'1px solid var(--border)'}}>
+              <span className="text-xs font-mono truncate flex-1 mr-4" style={{color:'var(--text-2)'}}>{w.url}</span>
+              <div className="flex items-center gap-2">
+                <button onClick={() => { navigator.clipboard.writeText(w.url); toast.success('Copied!') }}
+                  className="p-1.5 rounded-lg" style={{color:'var(--text-3)'}}><Copy size={12} /></button>
+                <button onClick={() => deleteWebhook(w.id)} className="p-1.5 rounded-lg" style={{color:'#ef4444'}}><Trash2 size={12} /></button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function PasswordForm({ locale, onSave }: { locale: string; onSave: (current: string, next: string) => void }) {
+  const [current, setCurrent] = useState('')
+  const [next, setNext] = useState('')
+  const [confirm, setConfirm] = useState('')
+  return (
+    <div className="space-y-3">
+      {[
+        {label:locale==='es'?'Contrasena actual':'Current password',val:current,set:setCurrent},
+        {label:locale==='es'?'Nueva contrasena':'New password',val:next,set:setNext},
+        {label:locale==='es'?'Confirmar contrasena':'Confirm password',val:confirm,set:setConfirm},
+      ].map(({label,val,set}) => (
+        <div key={label}>
+          <label className="block text-xs font-medium mb-1.5" style={{color:'var(--text-3)'}}>{label}</label>
+          <input type="password" value={val} onChange={e => set(e.target.value)}
+            className="w-full rounded-xl px-4 py-2.5 text-sm outline-none" style={{background:'var(--surface-2)',border:'1px solid var(--border-2)',color:'var(--text)'}} />
+        </div>
+      ))}
+      <button onClick={() => next === confirm ? onSave(current, next) : null}
+        className="flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold" style={{background:'var(--pink)',color:'#fff'}}>
+        <Save size={14} /> {locale === 'es' ? 'Actualizar contrasena' : 'Update password'}
+      </button>
     </div>
   )
 }
