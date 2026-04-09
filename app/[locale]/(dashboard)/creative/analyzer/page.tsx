@@ -65,7 +65,6 @@ export default function CreativeAnalyzerPage({ params }: PageProps) {
   const [enhanceIntensity, setEnhanceIntensity] = useState('medium')
   const [enhancing, setEnhancing] = useState(false)
   const [enhancement, setEnhancement] = useState<any>(null)
-  const [showCompare, setShowCompare] = useState(false)
 
   const handleFile = useCallback((file: File) => {
     if (!file.type.startsWith('image/')) { toast.error('Please upload an image file'); return }
@@ -89,8 +88,7 @@ export default function CreativeAnalyzerPage({ params }: PageProps) {
 
   async function runAnalysis() {
     if (!imageBase64) { toast.error('Upload an image first'); return }
-    setAnalyzing(true)
-    setActiveTab('analysis')
+    setAnalyzing(true); setActiveTab('analysis')
     try {
       const res = await fetch('/api/creative/analyze', {
         method: 'POST',
@@ -99,12 +97,9 @@ export default function CreativeAnalyzerPage({ params }: PageProps) {
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Analysis failed')
-      setAnalysis(data)
-      setAnalysisId(data.analysis_id)
+      setAnalysis(data); setAnalysisId(data.analysis_id)
       toast.success('Analysis complete!')
-    } catch (err: any) {
-      toast.error(err.message || 'Analysis failed')
-    }
+    } catch (err: any) { toast.error(err.message || 'Analysis failed') }
     setAnalyzing(false)
   }
 
@@ -119,12 +114,9 @@ export default function CreativeAnalyzerPage({ params }: PageProps) {
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Enhancement failed')
-      setEnhancement(data)
-      setActiveTab('compare')
+      setEnhancement(data); setActiveTab('compare')
       toast.success('Enhancement plan ready!')
-    } catch (err: any) {
-      toast.error(err.message || 'Enhancement failed')
-    }
+    } catch (err: any) { toast.error(err.message || 'Enhancement failed') }
     setEnhancing(false)
   }
 
@@ -163,7 +155,6 @@ export default function CreativeAnalyzerPage({ params }: PageProps) {
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
         {/* LEFT: Upload + Preview */}
         <div className="space-y-5">
-          {/* Upload zone */}
           {!imagePreview ? (
             <div
               onDrop={onDrop} onDragOver={e => { e.preventDefault(); setDragOver(true) }} onDragLeave={() => setDragOver(false)}
@@ -174,7 +165,7 @@ export default function CreativeAnalyzerPage({ params }: PageProps) {
                 <Upload size={28} style={{ color: 'var(--pink)' }} />
               </div>
               <p className="font-display font-bold text-lg mb-2" style={{ color: 'var(--text)' }}>Drop your creative here</p>
-              <p className="text-sm text-center" style={{ color: 'var(--text-3)' }}>JPG, PNG, WebP, GIF · Any marketing creative</p>
+              <p className="text-sm text-center" style={{ color: 'var(--text-3)' }}>JPG, PNG, WebP · Any marketing creative</p>
               <div className="flex flex-wrap gap-2 justify-center mt-4">
                 {['Static Ad', 'Social Post', 'Banner', 'Landing Page', 'Email'].map(t => (
                   <span key={t} className="text-xs px-2.5 py-1 rounded-full" style={{ background: 'var(--surface-2)', color: 'var(--text-3)' }}>{t}</span>
@@ -185,7 +176,6 @@ export default function CreativeAnalyzerPage({ params }: PageProps) {
           ) : (
             <div className="rounded-2xl overflow-hidden relative" style={{ background: 'var(--surface)', border: '1px solid var(--border-2)' }}>
               <img src={imagePreview} alt="Creative" className="w-full object-contain" style={{ maxHeight: 400 }} />
-              {/* Heatmap overlay when on heatmap tab */}
               {activeTab === 'heatmap' && analysis?.heatmap_data && (
                 <div className="absolute inset-0 pointer-events-none">
                   {(analysis.heatmap_data as any[]).map((zone: any, i: number) => {
@@ -197,17 +187,8 @@ export default function CreativeAnalyzerPage({ params }: PageProps) {
                     }
                     return (
                       <div key={i} className="absolute rounded-lg flex items-center justify-center text-white text-xs font-bold"
-                        style={{
-                          left: `${zone.x}%`, top: `${zone.y}%`,
-                          width: `${zone.width}%`, height: `${zone.height}%`,
-                          background: colors[heatmapMode] ?? 'transparent',
-                          backdropFilter: zone.intensity > 0.6 ? 'blur(1px)' : 'none',
-                          transition: 'background 0.3s',
-                          border: zone.priority === 1 ? '2px solid rgba(237,25,102,0.8)' : 'none',
-                        }}>
-                        {heatmapMode === 'flow' && zone.priority <= 3 && (
-                          <span className="bg-black bg-opacity-60 rounded px-1">{zone.priority}</span>
-                        )}
+                        style={{ left: `${zone.x}%`, top: `${zone.y}%`, width: `${zone.width}%`, height: `${zone.height}%`, background: colors[heatmapMode] ?? 'transparent', border: zone.priority === 1 ? '2px solid rgba(237,25,102,0.8)' : 'none' }}>
+                        {heatmapMode === 'flow' && zone.priority <= 3 && <span className="bg-black bg-opacity-60 rounded px-1">{zone.priority}</span>}
                       </div>
                     )
                   })}
@@ -221,7 +202,6 @@ export default function CreativeAnalyzerPage({ params }: PageProps) {
             </div>
           )}
 
-          {/* Asset type + Analyze button */}
           {imagePreview && (
             <div className="flex gap-3">
               <select value={assetType} onChange={e => setAssetType(e.target.value)} className="input flex-1 text-sm">
@@ -235,7 +215,6 @@ export default function CreativeAnalyzerPage({ params }: PageProps) {
             </div>
           )}
 
-          {/* Overall score widget */}
           {analysis && (
             <div className="rounded-2xl p-6" style={{ background: 'var(--surface)', border: `1px solid ${overallColor}30` }}>
               <div className="flex items-center justify-between mb-4">
@@ -254,7 +233,6 @@ export default function CreativeAnalyzerPage({ params }: PageProps) {
                   <p className="text-xs font-bold" style={{ color: '#ef4444' }}>⚠ {analysis.top_weakness?.slice(0, 30)}</p>
                 </div>
               </div>
-              {/* Score bar */}
               <div className="h-2 rounded-full overflow-hidden" style={{ background: 'var(--surface-3)' }}>
                 <div className="h-full rounded-full transition-all duration-1000" style={{ width: `${overallScore}%`, background: `linear-gradient(90deg, ${overallColor}, ${overallColor}88)` }} />
               </div>
@@ -275,15 +253,11 @@ export default function CreativeAnalyzerPage({ params }: PageProps) {
 
           {analyzing && (
             <div className="rounded-2xl flex flex-col items-center justify-center" style={{ background: 'var(--surface)', border: '1px solid rgba(237,25,102,0.2)', minHeight: 400 }}>
-              <div className="relative mb-6">
-                <div className="w-20 h-20 rounded-2xl flex items-center justify-center" style={{ background: 'rgba(237,25,102,0.08)', border: '1px solid rgba(237,25,102,0.2)' }}>
-                  <Brain size={36} style={{ color: 'var(--pink)' }} className="animate-pulse" />
-                </div>
-              </div>
+              <Brain size={36} style={{ color: 'var(--pink)' }} className="animate-pulse mb-6" />
               <p className="font-display font-bold text-lg mb-2" style={{ color: 'var(--text)' }}>Analyzing your creative...</p>
               <div className="space-y-2 text-center">
                 {['Evaluating visual hierarchy...', 'Simulating attention patterns...', 'Scoring conversion signals...', 'Generating recommendations...'].map((s, i) => (
-                  <p key={i} className="text-xs" style={{ color: 'var(--text-3)', opacity: 0.6 + (i * 0.1) }}>{s}</p>
+                  <p key={i} className="text-xs" style={{ color: 'var(--text-3)' }}>{s}</p>
                 ))}
               </div>
             </div>
@@ -291,7 +265,6 @@ export default function CreativeAnalyzerPage({ params }: PageProps) {
 
           {analysis && (
             <>
-              {/* Tabs */}
               <div className="flex gap-1 p-1 rounded-xl" style={{ background: 'var(--surface)', border: '1px solid var(--border-2)' }}>
                 {tabs.map(({ key, label, icon: Icon }) => (
                   <button key={key} onClick={() => setActiveTab(key as any)}
@@ -302,7 +275,7 @@ export default function CreativeAnalyzerPage({ params }: PageProps) {
                 ))}
               </div>
 
-              {/* SCORES TAB */}
+              {/* SCORES */}
               {activeTab === 'analysis' && (
                 <div className="rounded-2xl p-5 space-y-3" style={{ background: 'var(--surface)', border: '1px solid var(--border-2)' }}>
                   <h3 className="font-display font-bold text-sm mb-4" style={{ color: 'var(--text)' }}>Score Breakdown</h3>
@@ -333,16 +306,11 @@ export default function CreativeAnalyzerPage({ params }: PageProps) {
                 </div>
               )}
 
-              {/* HEATMAP TAB */}
+              {/* HEATMAP */}
               {activeTab === 'heatmap' && (
                 <div className="rounded-2xl p-5 space-y-4" style={{ background: 'var(--surface)', border: '1px solid var(--border-2)' }}>
                   <div className="flex gap-2 flex-wrap">
-                    {[
-                      { key: 'heatmap', label: '🔥 Heatmap' },
-                      { key: 'focus', label: '🎯 Focus Areas' },
-                      { key: 'flow', label: '👁 Attention Flow' },
-                      { key: 'weaknesses', label: '⚠️ Weak Zones' },
-                    ].map(({ key, label }) => (
+                    {[{ key: 'heatmap', label: '🔥 Heatmap' }, { key: 'focus', label: '🎯 Focus Areas' }, { key: 'flow', label: '👁 Attention Flow' }, { key: 'weaknesses', label: '⚠️ Weak Zones' }].map(({ key, label }) => (
                       <button key={key} onClick={() => setHeatmapMode(key as any)}
                         className="text-xs px-3 py-1.5 rounded-lg font-medium transition-all"
                         style={{ background: heatmapMode === key ? 'rgba(237,25,102,0.1)' : 'var(--surface-2)', color: heatmapMode === key ? 'var(--pink)' : 'var(--text-3)', border: `1px solid ${heatmapMode === key ? 'rgba(237,25,102,0.3)' : 'var(--border-2)'}` }}>
@@ -350,21 +318,12 @@ export default function CreativeAnalyzerPage({ params }: PageProps) {
                       </button>
                     ))}
                   </div>
-                  <p className="text-xs" style={{ color: 'var(--text-3)' }}>
-                    {heatmapMode === 'heatmap' && '🔥 Red = high attention zones. The darker the overlay, the more eyes land here.'}
-                    {heatmapMode === 'focus' && '🎯 Highlighted zones are the top 2 primary focus areas your audience will fixate on.'}
-                    {heatmapMode === 'flow' && '👁 Numbers show the order in which a viewer scans this creative (1 = first, 2 = second...).'}
-                    {heatmapMode === 'weaknesses' && '⚠️ Red zones show areas with critically low attention — these elements are being missed.'}
-                  </p>
                   <p className="text-xs font-semibold" style={{ color: 'var(--text-2)' }}>← See the overlay on your creative on the left</p>
                   <div className="space-y-2">
-                    <p className="text-xs font-semibold" style={{ color: 'var(--text-3)' }}>Attention zone breakdown:</p>
                     {(analysis.heatmap_data as any[]).sort((a: any, b: any) => a.priority - b.priority).map((zone: any, i: number) => (
                       <div key={i} className="flex items-center gap-3 p-2 rounded-lg" style={{ background: 'var(--surface-2)' }}>
                         <div className="w-5 h-5 rounded flex items-center justify-center text-xs font-bold" style={{ background: i < 2 ? 'var(--pink)' : 'var(--surface-3)', color: i < 2 ? '#fff' : 'var(--text-3)' }}>{zone.priority}</div>
-                        <div className="flex-1">
-                          <p className="text-xs font-medium" style={{ color: 'var(--text-2)' }}>{zone.label}</p>
-                        </div>
+                        <p className="text-xs font-medium flex-1" style={{ color: 'var(--text-2)' }}>{zone.label}</p>
                         <div className="text-xs" style={{ color: 'var(--text-3)' }}>{Math.round(zone.intensity * 100)}% attention</div>
                       </div>
                     ))}
@@ -372,7 +331,7 @@ export default function CreativeAnalyzerPage({ params }: PageProps) {
                 </div>
               )}
 
-              {/* RECOMMENDATIONS TAB */}
+              {/* RECOMMENDATIONS */}
               {activeTab === 'recommendations' && (
                 <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1">
                   {(analysis.recommendations as any[]).map((rec: any) => {
@@ -386,7 +345,7 @@ export default function CreativeAnalyzerPage({ params }: PageProps) {
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-0.5">
                               <span className="text-xs font-bold px-2 py-0.5 rounded-full uppercase" style={{ background: `${impactColor}15`, color: impactColor }}>{rec.impact}</span>
-                              <span className="text-xs capitalize" style={{ color: 'var(--text-3)' }}>{rec.category.replace(/_/g, ' ')}</span>
+                              <span className="text-xs capitalize" style={{ color: 'var(--text-3)' }}>{rec.category?.replace(/_/g, ' ')}</span>
                             </div>
                             <p className="text-sm font-medium" style={{ color: 'var(--text)' }}>{rec.what_is_wrong}</p>
                           </div>
@@ -414,12 +373,11 @@ export default function CreativeAnalyzerPage({ params }: PageProps) {
                 </div>
               )}
 
-              {/* ENHANCE TAB */}
+              {/* ENHANCE */}
               {activeTab === 'enhance' && (
                 <div className="rounded-2xl p-5 space-y-5" style={{ background: 'var(--surface)', border: '1px solid var(--border-2)' }}>
                   <div>
                     <h3 className="font-display font-bold text-sm mb-1" style={{ color: 'var(--text)' }}>Enhancement Mode</h3>
-                    <p className="text-xs mb-3" style={{ color: 'var(--text-3)' }}>JUT will analyze your creative's weaknesses and generate a detailed optimization plan</p>
                     <div className="grid grid-cols-2 gap-2">
                       {ENHANCE_MODES.map(m => (
                         <button key={m.value} onClick={() => setEnhanceMode(m.value)}
@@ -447,12 +405,12 @@ export default function CreativeAnalyzerPage({ params }: PageProps) {
                   <button onClick={runEnhancement} disabled={enhancing}
                     className="w-full flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-bold"
                     style={{ background: 'linear-gradient(135deg, var(--pink), #2152A4)', color: '#fff', opacity: enhancing ? 0.7 : 1 }}>
-                    {enhancing ? <><Loader2 size={14} className="animate-spin" /> Generating enhancement plan...</> : <><Sparkles size={14} /> Generate Enhancement Plan</>}
+                    {enhancing ? <><Loader2 size={14} className="animate-spin" /> Generating...</> : <><Sparkles size={14} /> Generate Enhancement Plan</>}
                   </button>
                 </div>
               )}
 
-              {/* COMPARE TAB */}
+              {/* COMPARE */}
               {activeTab === 'compare' && (
                 <div className="rounded-2xl p-5 space-y-4" style={{ background: 'var(--surface)', border: '1px solid var(--border-2)' }}>
                   {!enhancement ? (
@@ -466,7 +424,6 @@ export default function CreativeAnalyzerPage({ params }: PageProps) {
                   ) : (
                     <>
                       <h3 className="font-display font-bold text-sm" style={{ color: 'var(--text)' }}>Original vs Enhanced</h3>
-                      {/* Score deltas */}
                       <div className="grid grid-cols-2 gap-3 mb-4">
                         <div className="p-3 rounded-xl text-center" style={{ background: 'var(--surface-2)', border: '1px solid var(--border-2)' }}>
                           <p className="text-xs mb-1" style={{ color: 'var(--text-3)' }}>Original Score</p>
@@ -479,14 +436,11 @@ export default function CreativeAnalyzerPage({ params }: PageProps) {
                           </p>
                         </div>
                       </div>
-                      {/* Key changes */}
                       <div className="space-y-2">
                         <p className="text-xs font-semibold" style={{ color: 'var(--text-2)' }}>What changes:</p>
                         {(enhancement.key_changes ?? []).slice(0, 5).map((c: any, i: number) => (
                           <div key={i} className="p-3 rounded-xl" style={{ background: 'var(--surface-2)' }}>
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="text-xs font-bold" style={{ color: 'var(--pink)' }}>{c.element}</span>
-                            </div>
+                            <p className="text-xs font-bold mb-1" style={{ color: 'var(--pink)' }}>{c.element}</p>
                             <div className="flex gap-2 text-xs">
                               <span style={{ color: '#ef4444' }}>Before: {c.before}</span>
                               <ArrowRight size={10} style={{ color: 'var(--text-3)', flexShrink: 0, marginTop: 2 }} />
@@ -495,9 +449,8 @@ export default function CreativeAnalyzerPage({ params }: PageProps) {
                           </div>
                         ))}
                       </div>
-                      {/* Enhancement directives */}
                       <div>
-                        <p className="text-xs font-semibold mb-2" style={{ color: 'var(--text-2)' }}>Enhancement directives for your designer:</p>
+                        <p className="text-xs font-semibold mb-2" style={{ color: 'var(--text-2)' }}>Directives for your designer:</p>
                         <div className="rounded-xl p-3 space-y-1.5" style={{ background: 'var(--surface-2)', maxHeight: 180, overflowY: 'auto' }}>
                           {(enhancement.directives ?? []).map((d: string, i: number) => (
                             <div key={i} className="flex gap-2">
@@ -507,7 +460,6 @@ export default function CreativeAnalyzerPage({ params }: PageProps) {
                           ))}
                         </div>
                       </div>
-                      {/* Impact */}
                       <div className="grid grid-cols-2 gap-3">
                         <div className="p-3 rounded-xl text-center" style={{ background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.2)' }}>
                           <p className="text-xs" style={{ color: 'var(--text-3)' }}>Conversion lift</p>
