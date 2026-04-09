@@ -31,6 +31,41 @@ export async function executeAutomation(ctx: ExecutionContext): Promise<Executio
   }
 }
 
+export async function matchAndRunAutomations(
+  userId: string,
+  triggerType: string,
+  triggerData: Record<string, unknown>
+): Promise<ExecutionResult[]> {
+  const supabase = await createClient()
+  const results: ExecutionResult[] = []
+  try {
+    const { data: automations } = await supabase
+      .from('automations')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('status', 'active')
+    if (!automations?.length) return results
+    for (const automation of automations) {
+      const trigger = automation.trigger ?? {}
+      if (trigger.type !== triggerType) continue
+      const ctx: ExecutionContext = { userId, automationId: automation.id, triggerData }
+      const result = await executeAutomation(ctx)
+      results.push(result)
+      await supabase.from('automation_runs').insert({
+        automation_id: automation.id,
+        trigger_data: triggerData,
+        status: result.success ? 'completed' : 'failed',
+        started_at: new Date().toISOString(),
+        completed_at: new Date().toISOString(),
+        error: result.error ?? null,
+      })
+    }
+  } catch (err) {
+    console.error('[executor] matchAndRunAutomations error:', err)
+  }
+  return results
+}
+
 async function executeAction(action: any, ctx: ExecutionContext, supabase: any): Promise<void> {
   switch (action.type) {
     case 'add_tag':
