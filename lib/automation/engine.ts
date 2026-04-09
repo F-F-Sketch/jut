@@ -1,13 +1,14 @@
-import { executeAutomation, ExecutionContext, ExecutionResult } from './executor'
 import { createClient } from '@/lib/supabase/server'
+import type { ExecutionResult } from './executor'
 
-export interface TriggerPayload {
+export interface TriggerEvent {
   type: string
-  userId: string
-  data: Record<string, unknown>
+  platform: string
+  payload: Record<string, unknown>
+  timestamp: string
 }
 
-export function createInstagramCommentEvent(postId: string, text: string, handle: string) {
+export function createInstagramCommentEvent(postId: string, text: string, handle: string): TriggerEvent {
   return {
     type: 'instagram_comment',
     platform: 'instagram',
@@ -16,7 +17,7 @@ export function createInstagramCommentEvent(postId: string, text: string, handle
   }
 }
 
-export function createInstagramDMEvent(userId: string, handle: string, text: string) {
+export function createInstagramDMEvent(userId: string, handle: string, text: string): TriggerEvent {
   return {
     type: 'instagram_dm',
     platform: 'instagram',
@@ -25,28 +26,28 @@ export function createInstagramDMEvent(userId: string, handle: string, text: str
   }
 }
 
-export async function processTrigger(payload: TriggerPayload): Promise<ExecutionResult[]> {
+export async function processTrigger(event: TriggerEvent, userId: string): Promise<ExecutionResult[]> {
   const supabase = await createClient()
   const results: ExecutionResult[] = []
   try {
     const { data: automations } = await supabase
       .from('automations').select('*')
-      .eq('user_id', payload.userId).eq('status', 'active')
+      .eq('user_id', userId).eq('status', 'active')
     if (!automations?.length) return results
     for (const automation of automations) {
       const trigger = automation.trigger ?? {}
-      if (trigger.type !== payload.type) continue
-      const ctx: ExecutionContext = { userId: payload.userId, automationId: automation.id, triggerData: payload.data }
-      const result = await executeAutomation(ctx)
+      if (trigger.type !== event.type) continue
+      const { executeAutomation } = await import('./executor')
+      const result = await executeAutomation({ userId, automationId: automation.id, triggerData: event.payload })
       results.push(result)
       await supabase.from('automation_runs').insert({
-        automation_id: automation.id, trigger_data: payload.data,
+        automation_id: automation.id, trigger_data: event.payload,
         status: result.success ? 'completed' : 'failed',
         started_at: new Date().toISOString(), completed_at: new Date().toISOString(),
         error: result.error ?? null,
       })
     }
-  } catch (err) { console.error('[engine] processTrigger error:', err) }
+  } catch (err) { console.error('[engine]', err) }
   return results
 }
 
@@ -56,6 +57,10 @@ export async function runPendingAutomations(): Promise<void> {
   if (!scheduled?.length) return
   for (const auto of scheduled) {
     if ((auto.trigger ?? {}).type !== 'schedule') continue
-    await processTrigger({ type: 'schedule', userId: auto.user_id, data: { automation_id: auto.id, scheduled_at: new Date().toISOString() } })
+    await processTrigger({
+      type: 'schedule', platform: 'internal',
+      payload: { automation_id: auto.id },
+      timestamp: new Date().toISOString(),
+    }, auto.user_id)
   }
 }
