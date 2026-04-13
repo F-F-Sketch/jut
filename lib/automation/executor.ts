@@ -3,17 +3,36 @@ import type { TriggerEvent, ExecutionContext, ExecutionResult } from './types'
 
 export type { ExecutionContext, ExecutionResult }
 
-export async function executeAutomation(ctx: ExecutionContext): Promise<ExecutionResult> {
+export interface AutomationRunResult {
+  run_id: string
+  steps_executed: number
+  success: boolean
+  error?: string
+}
+
+// Called as: executeAutomation(automation, event, userId)
+export async function executeAutomation(
+  automation: any,
+  event: TriggerEvent,
+  userId: string
+): Promise<AutomationRunResult> {
   const supabase = await createClient()
+  const runId = crypto.randomUUID()
+  const actions = automation.actions ?? []
+  let stepsExecuted = 0
   try {
-    const { data: automation } = await supabase
-      .from('automations').select('*').eq('id', ctx.automationId).single()
-    if (!automation) return { success: false, actionsRun: 0, error: 'Automation not found' }
-    const actions = automation.actions ?? []
-    for (const action of actions) { await executeAction(action, ctx, supabase) }
-    return { success: true, actionsRun: actions.length }
+    for (const action of actions) {
+      await executeAction(action, { userId, automationId: automation.id, triggerData: event.payload }, supabase)
+      stepsExecuted++
+    }
+    await supabase.from('automation_runs').insert({
+      id: runId, automation_id: automation.id, trigger_data: event.payload,
+      status: 'completed', started_at: new Date().toISOString(),
+      completed_at: new Date().toISOString(), error: null,
+    })
+    return { run_id: runId, steps_executed: stepsExecuted, success: true }
   } catch (err: any) {
-    return { success: false, actionsRun: 0, error: err?.message ?? 'Unknown error' }
+    return { run_id: runId, steps_executed: stepsExecuted, success: false, error: err?.message }
   }
 }
 
@@ -30,15 +49,8 @@ export async function matchAndRunAutomations(
     for (const automation of automations) {
       const trigger = automation.trigger ?? {}
       if (trigger.type !== event.type) continue
-      const ctx: ExecutionContext = { userId, automationId: automation.id, triggerData: event.payload }
-      const result = await executeAutomation(ctx)
-      results.push(result)
-      await supabase.from('automation_runs').insert({
-        automation_id: automation.id, trigger_data: event.payload,
-        status: result.success ? 'completed' : 'failed',
-        started_at: new Date().toISOString(), completed_at: new Date().toISOString(),
-        error: result.error ?? null,
-      })
+      const r = await executeAutomation(automation, event, userId)
+      results.push({ success: r.success, actionsRun: r.steps_executed, error: r.error })
     }
   } catch (err) { console.error('[executor]', err) }
   return results
