@@ -11,8 +11,8 @@ import { CommandPalette } from './CommandPalette'
 interface TopbarProps { locale: string; userName?: string | null }
 
 const TYPE_ICONS: Record<string, string> = {
-  automation_fired: 'â¡', lead_captured: 'ð¤', lead_qualified: 'ð¯',
-  sale: 'ð°', system: 'ð', automation_failed: 'â', conversation_started: 'ð¬',
+  automation_fired: 'Ã¢ÂÂ¡', lead_captured: 'Ã°ÂÂÂ¤', lead_qualified: 'Ã°ÂÂÂ¯',
+  sale: 'Ã°ÂÂÂ°', system: 'Ã°ÂÂÂ', automation_failed: 'Ã¢ÂÂ', conversation_started: 'Ã°ÂÂÂ¬',
 }
 
 export function Topbar({ locale, userName }: TopbarProps) {
@@ -62,7 +62,7 @@ export function Topbar({ locale, userName }: TopbarProps) {
     if (m < 60) return `${m}m ago`
     const h = Math.floor(m / 60)
     if (h < 24) return `${h}h ago`
-    return `${Math.floor(w / 24)}d ago`
+    return `${Math.floor(h / 24)}d ago`
   }
 
   useEffect(() => {
@@ -103,7 +103,7 @@ export function Topbar({ locale, userName }: TopbarProps) {
           style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', color: 'var(--text-3)', minWidth: 220 }}>
           <Search size={13} />
           <span className="flex-1 text-left">{locale === 'es' ? 'Buscar...' : 'Search...'}</span>
-          <kbd className="text-xs px-1.5 py-0.5 rounded" style={{ background: 'var(--surface-3)', color: 'var(--text-3)', fontFamily: 'monospace' }}>âK</kbd>
+          <kbd className="text-xs px-1.5 py-0.5 rounded" style={{ background: 'var(--surface-3)', color: 'var(--text-3)', fontFamily: 'monospace' }}>Ã¢ÂÂK</kbd>
         </button>
         <div className="flex items-center gap-1 rounded-lg p-1" style={{ background: 'var(--surface)', border: '1px solid var(--border-2)' }}>
           <Globe size={11} style={{ color: 'var(--text-3)', marginLeft: 3 }} />
@@ -134,7 +134,7 @@ export function Topbar({ locale, userName }: TopbarProps) {
                 ) : notifications.map((n: any) => (
                   <div key={n.id} className="flex items-start gap-3 px-4 py-3 border-b group"
                     style={{ borderColor: 'var(--border)', background: n.read ? 'transparent' : 'rgba(237,25,102,0.04)' }}>
-                    <span className="text-base flex-shrink-0 mt-0.5">{TYPE_ICONS[n.type] ?? 'ð'}</span>
+                    <span className="text-base flex-shrink-0 mt-0.5">{TYPE_ICONS[n.type] ?? 'Ã°ÂÂÂ'}</span>
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-semibold" style={{ color: n.read ? 'var(--text-3)' : 'var(--text)' }}>{n.title}</p>
                       {n.body && <p className="text-xs mt-0.5" style={{ color: 'var(--text-3)' }}>{n.body}</p>}
@@ -162,7 +162,7 @@ export function Topbar({ locale, userName }: TopbarProps) {
               <Link href={`/${locale}/settings`} onClick={() => setUserMenuOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-[var(--surface-2)]" style={{ color: 'var(--text-2)' }}><User size={14} />{locale === 'es' ? 'Perfil' : 'Profile'}</Link>
               <Link href={`/${locale}/settings`} onClick={() => setUserMenuOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-[var(--surface-2)]" style={{ color: 'var(--text-2)' }}><Settings size={14} />{locale === 'es' ? 'Ajustes' : 'Settings'}</Link>
               <div className="my-1" style={{ borderTop: '1px solid var(--border)' }} />
-              <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-[var(--surface-2)]" style={{ color: '#ef4444' }}><LogOut size={14} />{locale === 'es' ? 'Cerrar sesiÃ³n' : 'Sign out'}</button>
+              <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-[var(--surface-2)]" style={{ color: '#ef4444' }}><LogOut size={14} />{locale === 'es' ? 'Cerrar sesiÃÂ³n' : 'Sign out'}</button>
             </div>
           )}
         </div>
