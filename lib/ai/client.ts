@@ -1,38 +1,38 @@
-// JUT AI Client â uses Anthropic Claude as primary model
+// JUT AI Client Ã¢ÂÂ uses Anthropic Claude as primary model
 // Falls back gracefully if API key is missing
 
 export type ChatMessage = { role: 'user' | 'assistant' | 'system'; content: string }
 
-export const AI_MODEL = 'claude-sonnet-4-6'
+export const AI_MODEL = 'claude-haiku-4-5-20251001'
 
-// ââ System Prompt Builder ââââââââââââââââââââââââââââââââââââââ
+// Ã¢ÂÂÃ¢ÂÂ System Prompt Builder Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 export function buildSystemPrompt(config: BusinessConfig, locale: 'en' | 'es' = 'en'): string {
   const toneMap: Record<string, Record<string, string>> = {
     formal:   { en: 'formal, professional, and precise', es: 'formal, profesional y preciso' },
-    friendly: { en: 'warm, friendly, and approachable â like talking to a helpful friend', es: 'cÃ¡lido, amigable y cercano â como hablar con un amigo que te ayuda' },
+    friendly: { en: 'warm, friendly, and approachable Ã¢ÂÂ like talking to a helpful friend', es: 'cÃÂ¡lido, amigable y cercano Ã¢ÂÂ como hablar con un amigo que te ayuda' },
     casual:   { en: 'casual, relaxed, and conversational', es: 'casual, relajado y conversacional' },
-    sales:    { en: 'confident, persuasive, and benefit-focused â a natural closer', es: 'seguro, persuasivo y enfocado en beneficios â un cerrador natural' },
-    empathetic: { en: 'empathetic, patient, and understanding â focus on feelings first', es: 'empÃ¡tico, paciente y comprensivo â primero entiende los sentimientos' },
-    expert:   { en: 'expert, authoritative, and educational â you are the specialist', es: 'experto, autoritativo y educativo â eres el especialista' },
+    sales:    { en: 'confident, persuasive, and benefit-focused Ã¢ÂÂ a natural closer', es: 'seguro, persuasivo y enfocado en beneficios Ã¢ÂÂ un cerrador natural' },
+    empathetic: { en: 'empathetic, patient, and understanding Ã¢ÂÂ focus on feelings first', es: 'empÃÂ¡tico, paciente y comprensivo Ã¢ÂÂ primero entiende los sentimientos' },
+    expert:   { en: 'expert, authoritative, and educational Ã¢ÂÂ you are the specialist', es: 'experto, autoritativo y educativo Ã¢ÂÂ eres el especialista' },
   }
 
   const lengthMap: Record<string, Record<string, string>> = {
-    short:  { en: '1-2 sentences maximum. Be extremely concise.', es: '1-2 oraciones mÃ¡ximo. SÃ© extremadamente conciso.' },
-    medium: { en: '2-4 sentences. Enough to be helpful but not overwhelming.', es: '2-4 oraciones. Suficiente para ser Ãºtil sin agobiar.' },
+    short:  { en: '1-2 sentences maximum. Be extremely concise.', es: '1-2 oraciones mÃÂ¡ximo. SÃÂ© extremadamente conciso.' },
+    medium: { en: '2-4 sentences. Enough to be helpful but not overwhelming.', es: '2-4 oraciones. Suficiente para ser ÃÂºtil sin agobiar.' },
     long:   { en: 'As detailed as needed. Full explanations are welcome.', es: 'Tan detallado como sea necesario. Las explicaciones completas son bienvenidas.' },
   }
 
   const faqsText = config.faqs?.length
     ? config.faqs.map((f: any) => `Q: ${f.question}\nA: ${f.answer}`).join('\n\n')
-    : 'No specific FAQs configured yet â use your best judgment.'
+    : 'No specific FAQs configured yet Ã¢ÂÂ use your best judgment.'
 
   const offersText = config.offers?.length
-    ? config.offers.map((o: any) => `- ${o.name}: ${o.description} â $${o.price} ${o.currency ?? 'COP'}`).join('\n')
+    ? config.offers.map((o: any) => `- ${o.name}: ${o.description} Ã¢ÂÂ $${o.price} ${o.currency ?? 'COP'}`).join('\n')
     : 'No specific offers listed yet.'
 
   const humanBehavior = config.human_behavior ?? {}
 
-  return `You are ${config.agent_name ?? 'an AI assistant'} â a human-like sales and support agent for ${config.business_name ?? 'this business'}, a ${config.business_type ?? 'business'}.
+  return `You are ${config.agent_name ?? 'an AI assistant'} Ã¢ÂÂ a human-like sales and support agent for ${config.business_name ?? 'this business'}, a ${config.business_type ?? 'business'}.
 
 YOUR IDENTITY:
 - Name: ${config.agent_name ?? 'Sofia'}
@@ -40,13 +40,13 @@ YOUR IDENTITY:
 - You ARE a person, not a bot. Never reveal you are AI unless the user asks directly and explicitly.
 
 LANGUAGE & COMMUNICATION:
-- Always respond in: ${locale === 'es' ? 'Colombian Spanish â natural, warm, local expressions when appropriate' : 'English â natural and conversational'}
+- Always respond in: ${locale === 'es' ? 'Colombian Spanish Ã¢ÂÂ natural, warm, local expressions when appropriate' : 'English Ã¢ÂÂ natural and conversational'}
 - Tone: ${(toneMap[config.ai_tone ?? 'friendly'] ?? toneMap.friendly)[locale]}
 - Response length: ${(lengthMap[config.response_length ?? 'medium'] ?? lengthMap.medium)[locale]}
-${humanBehavior.use_emojis ? `- Use emojis naturally â 1-2 per message max, only when they add warmth ð` : '- Do NOT use emojis'}
+${humanBehavior.use_emojis ? `- Use emojis naturally Ã¢ÂÂ 1-2 per message max, only when they add warmth Ã°ÂÂÂ` : '- Do NOT use emojis'}
 ${humanBehavior.use_informal ? `- Use informal contractions and natural speech patterns` : ''}
 ${humanBehavior.ask_questions ? `- Ask 1 follow-up question per message to understand needs better` : ''}
-${humanBehavior.show_enthusiasm ? `- Show genuine enthusiasm for helping â be upbeat and positive` : ''}
+${humanBehavior.show_enthusiasm ? `- Show genuine enthusiasm for helping Ã¢ÂÂ be upbeat and positive` : ''}
 
 BEHAVIOR RULES:
 - Never make up prices, dates, or information not listed below
@@ -109,7 +109,7 @@ export async function generateCommentReply(
   comment: string, postContext: string, config: any, locale: 'en' | 'es' = 'en'
 ): Promise<string> {
   const prompt = locale === 'es'
-    ? `Alguien comentÃ³: "${comment}". Contexto: "${postContext}". Escribe una respuesta corta (1 oraciÃ³n) que invite a DM por DM. Suena humano.`
+    ? `Alguien comentÃÂ³: "${comment}". Contexto: "${postContext}". Escribe una respuesta corta (1 oraciÃÂ³n) que invite a DM por DM. Suena humano.`
     : `Someone commented: "${comment}". Post: "${postContext}". Write a short (1 sentence) reply inviting them to DM. Sound human.`
   const { response } = await generateResponse([{ role: 'user', content: prompt }], config, locale)
   return response
@@ -119,7 +119,7 @@ export async function analyzeLeadQualification(
   conversationHistory: ChatMessage[], criteria: string, locale: 'en' | 'es' = 'en'
 ): Promise<{ qualified: boolean; score: number; reason: string }> {
   const prompt = locale === 'es'
-    ? `Analiza esta conversaciÃ³n. SegÃºn: "${criteria}". Responde SOLO en JSON: {"qualified":true/false,"score":0-100,"reason":""}`
+    ? `Analiza esta conversaciÃÂ³n. SegÃÂºn: "${criteria}". Responde SOLO en JSON: {"qualified":true/false,"score":0-100,"reason":""}`
     : `Analyze this conversation based on: "${criteria}". Respond ONLY in JSON: {"qualified":true/false,"score":0-100,"reason":""}`
   const apiKey = process.env.ANTHROPIC_API_KEY
   if (!apiKey) return { qualified: false, score: 0, reason: 'API not configured' }
