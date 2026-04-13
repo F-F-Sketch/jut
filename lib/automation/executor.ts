@@ -50,7 +50,7 @@ export async function matchAndRunAutomations(
       const trigger = automation.trigger ?? {}
       if (trigger.type !== event.type) continue
       const r = await executeAutomation(automation, event, userId)
-      results.push({ success: r.success, actionsRun: r.steps_executed, steps_executed: r.steps_executed, error: r.error })
+      results.push({ success: r.success, actionsRun: r.steps_executed, steps_executed: r.steps_executed, automation_id: automation.id, error: r.error })
     }
   } catch (err) { console.error('[executor]', err) }
   return results
