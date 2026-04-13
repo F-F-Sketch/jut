@@ -56,7 +56,7 @@ export async function matchAndRunAutomations(
   return results
 }
 
-async function executeAction(action: any, ctx: ExecutionContext, supabase: any): Promise<void> {
+export async function executeAction(action: any, ctx: ExecutionContext, supabase: any): Promise<void> {
   switch (action.type) {
     case 'add_tag':
       await supabase.from('leads').update({ tags: action.config?.tags }).eq('user_id', ctx.userId)
