@@ -1,33 +1,30 @@
 import { redirect } from 'next/navigation'
-import { getUser, getUserProfile } from '@/lib/supabase/server'
+import { createClient, getUserProfile } from '@/lib/supabase/server'
 import { Sidebar } from '@/components/dashboard/Sidebar'
 import { Topbar } from '@/components/dashboard/Topbar'
 
-interface DashboardLayoutProps {
+export default async function DashboardLayout({
+  children,
+  params,
+}: {
   children: React.ReactNode
   params: { locale: string }
-}
-
-export default async function DashboardLayout({ children, params }: DashboardLayoutProps) {
+}) {
   const { locale } = params
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/' + locale + '/login')
 
-  let user = null
-  try { user = await getUser() } catch {}
-  if (!user) redirect(`/${locale}/login`)
-
-  let profile = null
-  try { profile = await getUserProfile(user.id) } catch {}
-
-  const userName = profile?.full_name ?? user.email?.split('@')[0] ?? 'User'
-  const userPlan = profile?.plan ?? 'free'
-  const userRole = profile?.role ?? 'user'
+  const profile = await getUserProfile(user.id)
 
   return (
-    <div className="min-h-screen" style={{ background: 'var(--bg)' }}>
-      <Sidebar locale={locale} userName={userName} userPlan={userPlan} userRole={userRole} />
-      <div className="ml-64">
-        <Topbar locale={locale} userName={userName} />
-        <main className="pt-[68px] min-h-screen">{children}</main>
+    <div className="flex h-screen overflow-hidden" style={{ background: 'var(--bg)' }}>
+      <Sidebar locale={locale} userRole={profile?.role ?? 'user'} />
+      <div className="flex-1 flex flex-col min-w-0 ml-64">
+        <Topbar locale={locale} userName={profile?.full_name ?? user.email ?? 'User'} />
+        <main className="flex-1 overflow-y-auto pt-[68px]">
+          {children}
+        </main>
       </div>
     </div>
   )
