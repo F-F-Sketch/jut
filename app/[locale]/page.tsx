@@ -6,11 +6,7 @@ export default async function LocaleRootPage({ params }: { params: { locale: str
   try {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
-    if (user) {
-      redirect('/' + locale + '/dashboard')
-    } else {
-      redirect('/' + locale + '/login')
-    }
+    redirect('/' + locale + (user ? '/dashboard' : '/login'))
   } catch {
     redirect('/' + locale + '/login')
   }
