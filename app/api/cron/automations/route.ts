@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
   let processed = 0
   let failed = 0
 
-  // ── 1. Process queued actions (delayed steps) ──────────────
+  // ââ 1. Process queued actions (delayed steps) ââââââââââââââ
   const { data: queuedItems } = await supabase
     .from('action_queue')
     .select('*')
@@ -42,8 +42,6 @@ export async function GET(req: NextRequest) {
       }).eq('id', item.id)
 
       try {
-        const { executeAction } = await import('@/lib/automation/executor')
-        // Execute the queued action directly
         await supabase.from('action_queue').update({
           status: 'completed',
         }).eq('id', item.id)
@@ -59,7 +57,7 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  // ── 2. Run scheduled automations ──────────────────────────
+  // ââ 2. Run scheduled automations ââââââââââââââââââââââââââ
   const { data: scheduledAutos } = await supabase
     .from('automations')
     .select('*')
@@ -88,7 +86,7 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  // ── 3. Clean up old completed runs (older than 30 days) ───
+  // ââ 3. Clean up old completed runs (older than 30 days) âââ
   const thirtyDaysAgo = new Date()
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
   await supabase
@@ -97,7 +95,7 @@ export async function GET(req: NextRequest) {
     .eq('status', 'completed')
     .lt('completed_at', thirtyDaysAgo.toISOString())
 
-  console.log(`[Cron] Done — processed: ${processed}, failed: ${failed}`)
+  console.log(`[Cron] Done â processed: ${processed}, failed: ${failed}`)
   return NextResponse.json({ ok: true, processed, failed, timestamp: now })
 }
 
