@@ -15,5 +15,8 @@ export interface ExecutionResult {
   success: boolean
   actionsRun: number
   steps_executed: number
+  automation_id?: string
+  lead_id?: string
+  conversation_id?: string
   error?: string
 }
