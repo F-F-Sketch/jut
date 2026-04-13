@@ -14,5 +14,6 @@ export interface ExecutionContext {
 export interface ExecutionResult {
   success: boolean
   actionsRun: number
+  steps_executed: number
   error?: string
 }
