@@ -1,140 +1,168 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Users, MessageSquare, Zap, DollarSign, ArrowRight, TrendingUp, Plus, Activity } from 'lucide-react'
+import { Users, MessageSquare, Zap, DollarSign, ArrowRight, TrendingUp, Activity, Sparkles } from 'lucide-react'
 import Link from 'next/link'
 import { FadeUp, StaggerChildren, CountUp, ScaleIn } from '@/components/ui/Animate'
 
-export default function DashboardPage({ params }: { params: { locale: string } }) {
+export default function DashboardPage({ params }:{ params:{ locale:string } }) {
   const { locale } = params
-  const [stats, setStats] = useState({ leads: 0, conversations: 0, automations: 0, revenue: 0 })
-  const [loading, setLoading] = useState(true)
-  const [hour] = useState(new Date().getHours())
-  const supabase = createClient()
+  const [stats,setStats]=useState({leads:0,conversations:0,automations:0})
+  const [loading,setLoading]=useState(true)
+  const [hovered,setHovered]=useState<number|null>(null)
+  const [tilt,setTilt]=useState({x:0,y:0,idx:-1})
+  const hour=new Date().getHours()
+  const supabase=createClient()
 
-  useEffect(() => {
-    (async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
-      const [leads, convos, autos] = await Promise.all([
-        supabase.from('leads').select('id', { count: 'exact' }).eq('user_id', user.id),
-        supabase.from('conversations').select('id', { count: 'exact' }).eq('user_id', user.id),
-        supabase.from('automations').select('id', { count: 'exact' }).eq('user_id', user.id).eq('status', 'active'),
+  useEffect(()=>{
+    (async()=>{
+      const{data:{user}}=await supabase.auth.getUser(); if(!user) return
+      const[a,b,c]=await Promise.all([
+        supabase.from('leads').select('id',{count:'exact'}).eq('user_id',user.id),
+        supabase.from('conversations').select('id',{count:'exact'}).eq('user_id',user.id),
+        supabase.from('automations').select('id',{count:'exact'}).eq('user_id',user.id).eq('status','active'),
       ])
-      setStats({ leads: leads.count || 0, conversations: convos.count || 0, automations: autos.count || 0, revenue: 0 })
+      setStats({leads:a.count||0,conversations:b.count||0,automations:c.count||0})
       setLoading(false)
     })()
-  }, [])
+  },[])
 
-  const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening'
-
-  const STATS = [
-    { label: 'Total Leads', value: stats.leads, icon: Users, color: '#6366f1', suffix: '' },
-    { label: 'Conversations', value: stats.conversations, icon: MessageSquare, color: '#3b82f6', suffix: '' },
-    { label: 'Active Automations', value: stats.automations, icon: Zap, color: 'var(--pink)', suffix: '' },
-    { label: 'Revenue', value: stats.revenue, icon: DollarSign, color: '#22c55e', prefix: '$', suffix: '' },
+  const greeting=hour<12?'Good morning':hour<18?'Good afternoon':'Good evening'
+  const STATS=[
+    {label:'Total Leads',value:stats.leads,icon:Users,color:'#6366f1'},
+    {label:'Conversations',value:stats.conversations,icon:MessageSquare,color:'#3b82f6'},
+    {label:'Active Automations',value:stats.automations,icon:Zap,color:'var(--pink)'},
+    {label:'Revenue',value:0,icon:DollarSign,color:'#22c55e',prefix:'$'},
+  ]
+  const ACTIONS=[
+    {label:'New Automation',href:locale+'/automations',icon:Zap,color:'var(--pink)'},
+    {label:'Add Lead',href:locale+'/leads',icon:Users,color:'#6366f1'},
+    {label:'Analytics',href:locale+'/analytics',icon:TrendingUp,color:'#22c55e'},
+    {label:'Creative AI',href:locale+'/creative',icon:Sparkles,color:'#8b5cf6'},
   ]
 
-  const QUICK_ACTIONS = [
-    { label: 'New Automation', href: locale + '/automations', icon: Zap, color: 'var(--pink)' },
-    { label: 'Add Lead', href: locale + '/leads', icon: Users, color: '#6366f1' },
-    { label: 'View Analytics', href: locale + '/analytics', icon: TrendingUp, color: '#22c55e' },
-  ]
+  const onMove=(e:React.MouseEvent,idx:number)=>{
+    const r=e.currentTarget.getBoundingClientRect()
+    setTilt({x:((e.clientX-r.left)/r.width-0.5)*14,y:((e.clientY-r.top)/r.height-0.5)*-14,idx})
+  }
 
-  return (
-    <div style={{ padding: '32px 32px 48px', maxWidth: 1200 }}>
+  return(
+    <div style={{padding:'32px 32px 60px',maxWidth:1200}}>
 
       {/* Header */}
       <FadeUp>
-        <div style={{ marginBottom: 36 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-            <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 8px rgba(34,197,94,0.6)', animation: 'pulse-dot 2s infinite' }}/>
-            <span style={{ fontSize: 12, color: 'var(--text-4)', fontWeight: 600, letterSpacing: 0.5, textTransform: 'uppercase' }}>System Active</span>
+        <div style={{marginBottom:36}}>
+          <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:8}}>
+            <span style={{width:8,height:8,borderRadius:'50%',background:'#22c55e',display:'inline-block',
+              boxShadow:'0 0 12px rgba(34,197,94,0.7)',animation:'pulse-dot 2s ease infinite'}}/>
+            <span style={{fontSize:11,color:'var(--text-4)',fontWeight:600,letterSpacing:0.8,textTransform:'uppercase'}}>System Active</span>
           </div>
-          <h1 style={{ fontSize: 'clamp(24px,3vw,34px)', fontWeight: 800, color: 'var(--text)', letterSpacing: -0.8, marginBottom: 8 }}>
+          <h1 style={{fontSize:'clamp(26px,3vw,36px)',fontWeight:800,letterSpacing:-0.8,marginBottom:6}}>
             {greeting} 👋
           </h1>
-          <p style={{ fontSize: 15, color: 'var(--text-3)' }}>Here is your business overview.</p>
+          <p style={{fontSize:15,color:'var(--text-3)'}}>Here is your business overview.</p>
         </div>
       </FadeUp>
 
-      {/* Stat Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))', gap: 16, marginBottom: 32 }}>
-        {STATS.map((s, i) => (
-          <FadeUp key={s.label} delay={i * 80}>
-            <div style={{
-              padding: 24, borderRadius: 20,
-              background: 'var(--surface)',
-              border: '1px solid var(--border-2)',
-              position: 'relative', overflow: 'hidden',
-              transition: 'transform 0.2s, border-color 0.2s, box-shadow 0.2s',
-              cursor: 'default',
-            }}
-              onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-3px)'; (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(237,25,102,0.2)'; (e.currentTarget as HTMLDivElement).style.boxShadow = '0 12px 40px rgba(0,0,0,0.4)' }}
-              onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.transform = ''; (e.currentTarget as HTMLDivElement).style.borderColor = ''; (e.currentTarget as HTMLDivElement).style.boxShadow = '' }}>
-              {/* Background glow */}
-              <div style={{ position:'absolute',top:-20,right:-20,width:80,height:80,borderRadius:'50%',background:s.color+'15',filter:'blur(20px)',pointerEvents:'none' }}/>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16, position:'relative' }}>
-                <span style={{ fontSize: 13, color: 'var(--text-3)', fontWeight: 500 }}>{s.label}</span>
-                <div style={{ width: 38, height: 38, borderRadius: 11, background: s.color + '18', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid ' + s.color + '25' }}>
-                  <s.icon size={17} color={s.color} strokeWidth={2}/>
+      {/* Stat cards with 3D tilt */}
+      <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(220px,1fr))',gap:16,marginBottom:28}}>
+        {STATS.map((s,i)=>(
+          <FadeUp key={s.label} delay={i*70}>
+            <div
+              onMouseEnter={()=>setHovered(i)}
+              onMouseLeave={()=>{setHovered(null);setTilt({x:0,y:0,idx:-1})}}
+              onMouseMove={e=>onMove(e,i)}
+              style={{
+                padding:24,borderRadius:20,
+                background:'var(--surface)',
+                border:'1px solid '+(hovered===i?'rgba(237,25,102,0.2)':'var(--border-2)'),
+                position:'relative',overflow:'hidden',cursor:'default',
+                transform:tilt.idx===i
+                  ?'perspective(700px) rotateX('+tilt.y+'deg) rotateY('+tilt.x+'deg) translateY(-4px) scale(1.01)'
+                  :'perspective(700px) rotateX(0) rotateY(0) translateY(0) scale(1)',
+                transition:'transform 0.12s ease,border-color 0.2s,box-shadow 0.2s',
+                boxShadow:hovered===i?'0 20px 60px rgba(0,0,0,0.5),inset 0 1px 0 rgba(255,255,255,0.05)':'none',
+              }}>
+              {/* Color blob */}
+              <div style={{position:'absolute',top:-20,right:-20,width:90,height:90,borderRadius:'50%',
+                background:s.color+'15',filter:'blur(20px)',pointerEvents:'none',
+                opacity:hovered===i?1:0.3,transition:'opacity 0.3s'}}/>
+              {/* Shimmer sweep */}
+              {hovered===i&&<div style={{position:'absolute',inset:0,background:'linear-gradient(105deg,transparent 35%,rgba(255,255,255,0.025) 50%,transparent 65%)',pointerEvents:'none'}}/>}
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:16,position:'relative'}}>
+                <span style={{fontSize:12,color:'var(--text-3)',fontWeight:500}}>{s.label}</span>
+                <div style={{width:36,height:36,borderRadius:10,
+                  background:hovered===i?s.color+'28':s.color+'15',
+                  display:'flex',alignItems:'center',justifyContent:'center',
+                  border:'1px solid '+(hovered===i?s.color+'40':s.color+'20'),
+                  transition:'background 0.2s,border-color 0.2s'}}>
+                  <s.icon size={16} color={s.color} strokeWidth={2}/>
                 </div>
               </div>
-              <div style={{ fontSize: 36, fontWeight: 800, color: 'var(--text)', letterSpacing: -1, lineHeight: 1, position:'relative' }}>
-                {loading ? '—' : <CountUp to={s.value} prefix={s.prefix} suffix={s.suffix}/>}
+              <div style={{fontSize:38,fontWeight:800,letterSpacing:-1.5,lineHeight:1,position:'relative',fontFamily:'var(--font-display)'}}>
+                {loading?'—':<CountUp to={s.value} prefix={s.prefix||''}/>}
               </div>
             </div>
           </FadeUp>
         ))}
       </div>
 
-      {/* Quick Actions + Status */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 32 }}>
-        <FadeUp delay={320}>
-          <div style={{ padding: 24, borderRadius: 20, background: 'var(--surface)', border: '1px solid var(--border-2)', height: '100%' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
-              <Activity size={16} color="var(--pink)"/>
-              <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)' }}>Quick Actions</span>
+      {/* Quick actions + status */}
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:20}}>
+        <FadeUp delay={300}>
+          <div style={{padding:24,borderRadius:20,background:'var(--surface)',border:'1px solid var(--border-2)',height:'100%'}}>
+            <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:18}}>
+              <Activity size={15} color="var(--pink)" strokeWidth={2}/>
+              <span style={{fontSize:15,fontWeight:700}}>Quick Actions</span>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {QUICK_ACTIONS.map((a, i) => (
-                <Link key={a.label} href={'/' + a.href} style={{
-                  display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px',
-                  borderRadius: 12, background: 'var(--surface-2)', border: '1px solid var(--border)',
-                  textDecoration: 'none', transition: 'all 0.2s',
+            <StaggerChildren stagger={60}>
+              {ACTIONS.map(a=>(
+                <Link key={a.label} href={'/'+a.href} style={{
+                  display:'flex',alignItems:'center',gap:12,padding:'11px 13px',
+                  borderRadius:12,background:'var(--surface-2)',border:'1px solid var(--border)',
+                  marginBottom:8,textDecoration:'none',
+                  transition:'all 0.18s cubic-bezier(0.22,1,0.36,1)',
                 }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.borderColor = a.color; (e.currentTarget as HTMLAnchorElement).style.background = 'var(--surface-3)' }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.borderColor = ''; (e.currentTarget as HTMLAnchorElement).style.background = '' }}>
-                  <div style={{ width: 32, height: 32, borderRadius: 9, background: a.color + '18', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <a.icon size={14} color={a.color}/>
+                  onMouseEnter={e=>{const el=e.currentTarget as HTMLAnchorElement;el.style.borderColor=a.color;el.style.background='var(--surface-3)';el.style.transform='translateX(3px)'}}
+                  onMouseLeave={e=>{const el=e.currentTarget as HTMLAnchorElement;el.style.borderColor='';el.style.background='';el.style.transform=''}}>
+                  <div style={{width:30,height:30,borderRadius:9,background:a.color+'18',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                    <a.icon size={13} color={a.color}/>
                   </div>
-                  <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-2)', flex: 1 }}>{a.label}</span>
+                  <span style={{fontSize:14,fontWeight:500,color:'var(--text-2)',flex:1}}>{a.label}</span>
                   <ArrowRight size={13} color="var(--text-4)"/>
                 </Link>
               ))}
-            </div>
+            </StaggerChildren>
           </div>
         </FadeUp>
 
-        <FadeUp delay={400}>
-          <div style={{ padding: 24, borderRadius: 20, background: 'linear-gradient(135deg,rgba(237,25,102,0.06),rgba(33,82,164,0.06))', border: '1px solid rgba(237,25,102,0.15)', height: '100%', position: 'relative', overflow: 'hidden' }}>
-            <div style={{ position:'absolute',top:-40,right:-40,width:160,height:160,borderRadius:'50%',background:'rgba(237,25,102,0.05)',filter:'blur(30px)',pointerEvents:'none' }}/>
-            <div style={{ position:'relative' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-                <Zap size={16} color="var(--pink)"/>
-                <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)' }}>JUT is ready to automate</span>
+        <FadeUp delay={380}>
+          <div style={{
+            padding:28,borderRadius:20,height:'100%',position:'relative',overflow:'hidden',
+            background:'linear-gradient(135deg,rgba(237,25,102,0.07),rgba(33,82,164,0.07))',
+            border:'1px solid rgba(237,25,102,0.18)',
+          }}>
+            <div style={{position:'absolute',top:-40,right:-40,width:180,height:180,borderRadius:'50%',
+              background:'rgba(237,25,102,0.06)',filter:'blur(40px)',pointerEvents:'none',
+              animation:'float 4s ease-in-out infinite'}}/>
+            <div style={{position:'relative'}}>
+              <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:12}}>
+                <span style={{width:7,height:7,borderRadius:'50%',background:'#22c55e',display:'inline-block',animation:'pulse-dot 2s ease infinite'}}/>
+                <span style={{fontSize:14,fontWeight:700,color:'var(--text)'}}>JUT is ready to automate</span>
               </div>
-              <p style={{ fontSize: 14, color: 'var(--text-3)', lineHeight: 1.6, marginBottom: 20 }}>
-                Connect Instagram and create your first automation to start capturing leads automatically.
+              <p style={{fontSize:14,color:'var(--text-3)',lineHeight:1.65,marginBottom:22}}>
+                Connect Instagram and create your first automation to start capturing leads automatically — 24/7.
               </p>
-              <Link href={'/' + locale + '/automations'} style={{
-                display: 'inline-flex', alignItems: 'center', gap: 7, padding: '10px 18px',
-                borderRadius: 11, background: 'var(--pink)', color: '#fff', textDecoration: 'none',
-                fontSize: 14, fontWeight: 700, transition: 'all 0.2s',
-                boxShadow: '0 4px 20px rgba(237,25,102,0.3)',
+              <Link href={'/'+locale+'/automations'} className="btn-premium" style={{
+                display:'inline-flex',alignItems:'center',gap:7,
+                padding:'10px 20px',borderRadius:12,
+                background:'var(--pink)',color:'#fff',
+                fontSize:14,fontWeight:700,textDecoration:'none',
+                boxShadow:'0 4px 24px rgba(237,25,102,0.35)',
+                transition:'all 0.2s cubic-bezier(0.22,1,0.36,1)',
               }}
-                onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.transform = 'translateY(-1px)'; (e.currentTarget as HTMLAnchorElement).style.boxShadow = '0 8px 30px rgba(237,25,102,0.45)' }}
-                onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.transform = ''; (e.currentTarget as HTMLAnchorElement).style.boxShadow = '0 4px 20px rgba(237,25,102,0.3)' }}>
+                onMouseEnter={e=>{const el=e.currentTarget as HTMLAnchorElement;el.style.transform='translateY(-2px)';el.style.boxShadow='0 8px 36px rgba(237,25,102,0.5)'}}
+                onMouseLeave={e=>{const el=e.currentTarget as HTMLAnchorElement;el.style.transform='';el.style.boxShadow='0 4px 24px rgba(237,25,102,0.35)'}}>
                 <Zap size={14}/> View Automations
               </Link>
             </div>
