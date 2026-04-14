@@ -1,43 +1,26 @@
 'use client'
 import { useEffect, useState } from 'react'
-
-export function TypingText({ words, speed = 80, pause = 2000, className = '', style = {} }: {
-  words: string[]; speed?: number; pause?: number; className?: string; style?: React.CSSProperties
-}) {
-  const [display, setDisplay] = useState('')
-  const [wordIdx, setWordIdx] = useState(0)
-  const [charIdx, setCharIdx] = useState(0)
-  const [deleting, setDeleting] = useState(false)
-  const [waiting, setWaiting] = useState(false)
-
-  useEffect(() => {
-    if (waiting) return
-    const current = words[wordIdx]
-    if (!deleting && charIdx === current.length) {
-      setWaiting(true)
-      setTimeout(() => { setDeleting(true); setWaiting(false) }, pause)
-      return
-    }
-    if (deleting && charIdx === 0) {
-      setDeleting(false)
-      setWordIdx(i => (i + 1) % words.length)
-      return
-    }
-    const delay = deleting ? speed / 2 : speed
-    const t = setTimeout(() => {
-      setCharIdx(i => deleting ? i - 1 : i + 1)
-      setDisplay(current.slice(0, deleting ? charIdx - 1 : charIdx + 1))
-    }, delay)
-    return () => clearTimeout(t)
-  }, [charIdx, deleting, waiting, wordIdx, words, speed, pause])
-
-  return (
+export function TypingText({words,speed=75,pause=2200,style={},className=''}:{words:string[];speed?:number;pause?:number;style?:React.CSSProperties;className?:string}) {
+  const [disp,setDisp]=useState('')
+  const [wi,setWi]=useState(0)
+  const [ci,setCi]=useState(0)
+  const [del,setDel]=useState(false)
+  const [wait,setWait]=useState(false)
+  useEffect(()=>{
+    if(wait) return
+    const w=words[wi]
+    if(!del&&ci===w.length){setWait(true);setTimeout(()=>{setDel(true);setWait(false)},pause);return}
+    if(del&&ci===0){setDel(false);setWi(i=>(i+1)%words.length);return}
+    const t=setTimeout(()=>{
+      const next=del?ci-1:ci+1
+      setCi(next); setDisp(w.slice(0,next))
+    },del?speed/2:speed)
+    return()=>clearTimeout(t)
+  },[ci,del,wait,wi,words,speed,pause])
+  return(
     <span className={className} style={style}>
-      {display}
-      <span style={{
-        display:'inline-block', width:2, height:'0.9em', background:'var(--pink)',
-        marginLeft:2, verticalAlign:'middle', animation:'cursor-blink 1s step-end infinite',
-      }}/>
+      {disp}
+      <span style={{display:'inline-block',width:2,height:'0.85em',background:'var(--pink)',marginLeft:2,verticalAlign:'middle',animation:'cursor-blink 1s step-end infinite'}}/>
     </span>
   )
 }
