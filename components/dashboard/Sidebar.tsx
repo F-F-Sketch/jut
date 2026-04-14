@@ -1,144 +1,149 @@
 'use client'
-
-import { usePathname } from 'next/navigation'
 import Link from 'next/link'
-import { cn } from '@/lib/utils'
+import { usePathname } from 'next/navigation'
 import {
-  LayoutDashboard, Users, MessageSquare, Zap,
-  AtSign, ShoppingBag, Building2, BarChart3,
-  Settings, HelpCircle, ChevronRight, Sparkles, Shield, Brain, Bot
+  LayoutDashboard, Users, MessageSquare, Zap, BarChart3,
+  Settings, Share2, ShoppingBag, Bot, Sparkles, HelpCircle,
+  Shield, ChevronRight, Crown
 } from 'lucide-react'
 
-interface SidebarProps {
-  locale: string
-  userName?: string | null
-  userPlan?: string
-  userRole?: string
-}
-
-const NAV_EN = {
-  dashboard: 'Dashboard', leads: 'Leads', conversations: 'Conversations',
-  automations: 'Automations', social: 'Social Triggers', sales: 'Sales',
-  analytics: 'Analytics', settings: 'Settings', help: 'Help & Support',
-  creative: 'Creative AI', agent: 'AI Agent',
-}
-const NAV_ES = {
-  dashboard: 'Dashboard', leads: 'Leads', conversations: 'Conversaciones',
-  automations: 'Automatizaciones', social: 'Triggers Sociales', sales: 'Ventas',
-  analytics: 'Analítica', settings: 'Ajustes', help: 'Ayuda',
-  creative: 'IA Creativa', agent: 'Agente IA',
-}
-
-const NAV_ITEMS = [
-  { key: 'dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { key: 'leads', href: '/leads', icon: Users },
-  { key: 'conversations', href: '/conversations', icon: MessageSquare },
-  { key: 'automations', href: '/automations', icon: Zap },
-  { key: 'social', href: '/social', icon: AtSign },
-  { key: 'sales', href: '/sales', icon: ShoppingBag },
-  { key: 'agent', href: '/agent', icon: Bot },
-  { key: 'creative', href: '/creative', icon: Brain },
-  { key: 'analytics', href: '/analytics', icon: BarChart3 },
+const NAV = [
+  { group: 'Main', items: [
+    { href: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { href: 'leads', label: 'Leads', icon: Users },
+    { href: 'conversations', label: 'Conversations', icon: MessageSquare },
+  ]},
+  { group: 'Automation', items: [
+    { href: 'automations', label: 'Automations', icon: Zap },
+    { href: 'social', label: 'Social Networks', icon: Share2 },
+    { href: 'agent', label: 'AI Agent', icon: Bot },
+  ]},
+  { group: 'Business', items: [
+    { href: 'sales', label: 'Sales', icon: ShoppingBag },
+    { href: 'analytics', label: 'Analytics', icon: BarChart3 },
+    { href: 'creative', label: 'Creative AI', icon: Sparkles },
+  ]},
+  { group: 'Account', items: [
+    { href: 'settings', label: 'Settings', icon: Settings },
+    { href: 'help', label: 'Help', icon: HelpCircle },
+  ]},
 ]
 
-const BOTTOM_ITEMS = [
-  { key: 'settings', href: '/settings', icon: Settings },
-  { key: 'help', href: '/help', icon: HelpCircle },
+const ADMIN_NAV = [
+  { href: 'admin', label: 'Admin Panel', icon: Shield },
+  { href: 'customization', label: 'Customization', icon: Sparkles },
+  { href: 'landing-builder', label: 'Landing Builder', icon: LayoutDashboard },
 ]
 
-export function Sidebar({ locale, userName, userPlan = 'free', userRole = 'user' }: SidebarProps) {
+interface SidebarProps { locale: string; userRole?: string }
+
+export function Sidebar({ locale, userRole }: SidebarProps) {
   const pathname = usePathname()
-  const labels = locale === 'es' ? NAV_ES : NAV_EN
-  const isOwner = userRole === 'owner' || userRole === 'admin'
-
-  const isActive = (href: string) => {
-    const full = `/${locale}${href}`
-    return pathname === full || pathname.startsWith(`${full}/`)
-  }
+  const isActive = (href: string) => pathname.includes('/' + href)
+  const navLink = (href: string) => '/' + locale + '/' + href
 
   return (
-    <aside className="fixed left-0 top-0 bottom-0 w-64 flex flex-col z-40"
-      style={{ background: 'var(--bg2)', borderRight: '1px solid var(--border)' }}>
+    <aside style={{
+      width: 240, height: '100vh', position: 'fixed', left: 0, top: 0, zIndex: 40,
+      background: 'var(--bg-2)',
+      borderRight: '1px solid var(--border)',
+      display: 'flex', flexDirection: 'column',
+      overflow: 'hidden',
+    }}>
+      {/* Subtle gradient top */}
+      <div style={{position:'absolute',top:0,left:0,right:0,height:200,background:'radial-gradient(ellipse at 50% 0%, rgba(237,25,102,0.06) 0%, transparent 70%)',pointerEvents:'none'}}/>
+
       {/* Logo */}
-      <div className="flex items-center gap-3 px-6 h-[68px] border-b" style={{ borderColor: 'var(--border)' }}>
-        <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-display font-bold text-sm"
-          style={{ background: 'var(--pink)', boxShadow: '0 0 20px rgba(237,25,102,0.4)' }}>J</div>
-        <span className="font-display font-bold text-xl tracking-tight" style={{ color: 'var(--text)' }}>JUT</span>
+      <div style={{padding:'24px 20px 16px',position:'relative'}}>
+        <Link href={navLink('dashboard')} style={{display:'flex',alignItems:'center',gap:10,textDecoration:'none'}}>
+          <div style={{
+            width:34, height:34, borderRadius:10,
+            background:'linear-gradient(135deg, var(--pink), #b0124e)',
+            display:'flex', alignItems:'center', justifyContent:'center',
+            boxShadow:'0 4px 16px rgba(237,25,102,0.35)',
+            flexShrink:0,
+          }}>
+            <Zap size={16} color="#fff" strokeWidth={2.5}/>
+          </div>
+          <div>
+            <div style={{fontFamily:'var(--font-display)',fontWeight:800,fontSize:18,color:'var(--text)',letterSpacing:-0.5,lineHeight:1}}>JUT</div>
+            <div style={{fontSize:10,color:'var(--text-4)',letterSpacing:0.5,fontWeight:500}}>AI PLATFORM</div>
+          </div>
+        </Link>
       </div>
 
-      {/* Main Nav */}
-      <nav className="flex-1 px-3 py-4 overflow-y-auto space-y-1">
-        {NAV_ITEMS.map(({ key, href, icon: Icon }) => {
-          const active = isActive(href)
-          return (
-            <Link key={key} href={`/${locale}${href}`} className={cn('nav-item', active && 'active')}>
-              <Icon size={17} className="flex-shrink-0" />
-              <span className="flex-1">{labels[key as keyof typeof labels]}</span>
-              {key === 'creative' && <span className="text-xs px-1.5 py-0.5 rounded font-bold" style={{ background: 'rgba(237,25,102,0.15)', color: 'var(--pink)', fontSize: 9 }}>AI</span>}
-              {key === 'agent' && <span className="text-xs px-1.5 py-0.5 rounded font-bold" style={{ background: 'rgba(74,144,217,0.15)', color: '#4a90d9', fontSize: 9 }}>NEW</span>}
-              {active && <ChevronRight size={14} style={{ color: 'var(--pink)' }} />}
-            </Link>
-          )
-        })}
+      <div style={{height:'1px',background:'linear-gradient(90deg,transparent,var(--border-2),transparent)',margin:'0 16px'}}/>
 
-        {/* Admin link — owner only */}
-        {isOwner && (
-          <div className="pt-3 mt-3 border-t" style={{ borderColor: 'var(--border)' }}>
-            <p className="text-xs font-semibold uppercase tracking-wider px-3 mb-2" style={{ color: 'var(--text-3)' }}>Owner</p>
-            <Link href={`/${locale}/admin`} className={cn('nav-item', pathname.startsWith(`/${locale}/admin`) && 'active')}>
-              <Shield size={17} className="flex-shrink-0" />
-              <span className="flex-1">Admin Panel</span>
-              {pathname.startsWith(`/${locale}/admin`) && <ChevronRight size={14} style={{ color: 'var(--pink)' }} />}
-            </Link>
+      {/* Nav */}
+      <nav style={{flex:1,overflowY:'auto',padding:'12px 12px',display:'flex',flexDirection:'column',gap:4}}>
+        {NAV.map(group => (
+          <div key={group.group} style={{marginBottom:8}}>
+            <div style={{fontSize:10,fontWeight:700,color:'var(--text-4)',letterSpacing:0.8,textTransform:'uppercase',padding:'4px 10px',marginBottom:4}}>{group.group}</div>
+            {group.items.map(item => {
+              const active = isActive(item.href)
+              return (
+                <Link key={item.href} href={navLink(item.href)} style={{
+                  display:'flex', alignItems:'center', gap:9, padding:'9px 10px',
+                  borderRadius:10, fontSize:13.5, fontWeight: active ? 600 : 400,
+                  color: active ? 'var(--text)' : 'var(--text-3)',
+                  textDecoration:'none', transition:'all 0.15s',
+                  background: active ? 'rgba(237,25,102,0.08)' : 'transparent',
+                  border: '1px solid ' + (active ? 'rgba(237,25,102,0.12)' : 'transparent'),
+                  position:'relative', marginBottom:1,
+                }}>
+                  {active && <div style={{position:'absolute',left:0,top:'20%',bottom:'20%',width:2,background:'var(--pink)',borderRadius:2}}/>}
+                  <item.icon size={15} strokeWidth={active?2.2:1.8} color={active?'var(--pink)':'var(--text-3)'}/>
+                  {item.label}
+                </Link>
+              )
+            })}
+          </div>
+        ))}
+
+        {/* Admin section */}
+        {(userRole === 'owner' || userRole === 'admin') && (
+          <div style={{marginBottom:8}}>
+            <div style={{fontSize:10,fontWeight:700,color:'var(--text-4)',letterSpacing:0.8,textTransform:'uppercase',padding:'4px 10px',marginBottom:4,display:'flex',alignItems:'center',gap:5}}>
+              <Crown size={9} color="var(--gold)"/> Admin
+            </div>
+            {ADMIN_NAV.map(item => {
+              const active = isActive(item.href)
+              return (
+                <Link key={item.href} href={navLink(item.href)} style={{
+                  display:'flex', alignItems:'center', gap:9, padding:'9px 10px',
+                  borderRadius:10, fontSize:13.5, fontWeight: active ? 600 : 400,
+                  color: active ? 'var(--gold-light)' : 'var(--text-3)',
+                  textDecoration:'none', transition:'all 0.15s',
+                  background: active ? 'rgba(201,168,76,0.07)' : 'transparent',
+                  border: '1px solid ' + (active ? 'rgba(201,168,76,0.15)' : 'transparent'),
+                  marginBottom:1,
+                }}>
+                  <item.icon size={15} strokeWidth={1.8} color={active?'var(--gold)':'var(--text-3)'}/>
+                  {item.label}
+                </Link>
+              )
+            })}
           </div>
         )}
       </nav>
 
-      {/* Upgrade card */}
-      {userPlan === 'free' && !isOwner && (
-        <div className="px-3 mb-3">
-          <div className="rounded-xl p-4" style={{ background: 'rgba(237,25,102,0.08)', border: '1px solid rgba(237,25,102,0.2)' }}>
-            <div className="flex items-center gap-2 mb-2">
-              <Sparkles size={14} style={{ color: 'var(--pink)' }} />
-              <span className="font-display font-bold text-xs" style={{ color: 'var(--pink)' }}>
-                {locale === 'es' ? 'Mejorar Plan' : 'Upgrade Plan'}
-              </span>
-            </div>
-            <p className="text-xs mb-3" style={{ color: 'var(--text-3)' }}>
-              {locale === 'es' ? 'Desbloquea automatizaciones ilimitadas.' : 'Unlock unlimited automations and AI conversations.'}
-            </p>
-            <Link href={`/${locale}/settings`} className="btn-primary text-xs px-3 py-1.5 w-full text-center block">
-              {locale === 'es' ? 'Mejorar ahora' : 'Upgrade now'}
-            </Link>
+      {/* Upgrade CTA */}
+      <div style={{padding:12,borderTop:'1px solid var(--border)'}}>
+        <div style={{
+          padding:'14px 14px', borderRadius:12,
+          background:'linear-gradient(135deg, rgba(237,25,102,0.1), rgba(33,82,164,0.08))',
+          border:'1px solid rgba(237,25,102,0.15)',
+        }}>
+          <div style={{display:'flex',alignItems:'center',gap:7,marginBottom:6}}>
+            <Crown size={13} color="var(--gold)"/>
+            <span style={{fontSize:12,fontWeight:700,color:'var(--text-2)'}}>Upgrade to Elite</span>
           </div>
+          <p style={{fontSize:11,color:'var(--text-4)',lineHeight:1.5,marginBottom:8}}>Unlimited automations, custom AI & white-label</p>
+          <button style={{width:'100%',padding:'7px',borderRadius:8,background:'var(--pink)',border:'none',color:'#fff',fontSize:12,fontWeight:700,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:5}}>
+            Upgrade <ChevronRight size={11}/>
+          </button>
         </div>
-      )}
-
-      {/* Bottom nav */}
-      <div className="px-3 py-3 border-t space-y-1" style={{ borderColor: 'var(--border)' }}>
-        {BOTTOM_ITEMS.map(({ key, href, icon: Icon }) => (
-          <Link key={key} href={`/${locale}${href}`} className={cn('nav-item', isActive(href) && 'active')}>
-            <Icon size={17} className="flex-shrink-0" />
-            <span>{labels[key as keyof typeof labels]}</span>
-          </Link>
-        ))}
       </div>
-
-      {/* User footer */}
-      {userName && (
-        <div className="px-4 py-3 border-t flex items-center gap-3" style={{ borderColor: 'var(--border)' }}>
-          <div className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs text-white flex-shrink-0"
-            style={{ background: 'linear-gradient(135deg, var(--pink), var(--blue))' }}>
-            {userName.slice(0, 2).toUpperCase()}
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="text-sm font-medium truncate" style={{ color: 'var(--text)' }}>{userName}</div>
-            <div className="text-xs capitalize" style={{ color: 'var(--text-3)' }}>
-              {isOwner ? '👑 Owner' : `${userPlan} plan`}
-            </div>
-          </div>
-        </div>
-      )}
     </aside>
   )
 }
