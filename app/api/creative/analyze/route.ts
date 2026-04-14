@@ -13,8 +13,11 @@ export async function POST(req: NextRequest) {
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     const { imageBase64, imageUrl, assetType = 'static_ad', assetName = 'Creative', assetId } = await req.json()
     if (!imageBase64 && !imageUrl) return NextResponse.json({ error: 'No image provided' }, { status: 400 })
+    const cleanBase64 = imageBase64?.includes(',') ? imageBase64.split(',')[1] : imageBase64
+    const mimeMatch = imageBase64?.match(/data:(image\/[^;]+);base64/)
+    const mediaType = (mimeMatch?.[1] || 'image/jpeg') as 'image/jpeg'|'image/png'|'image/gif'|'image/webp'
     const imageContent = imageBase64
-      ? { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: imageBase64 } }
+      ? { type: 'image', source: { type: 'base64', media_type: mediaType, data: cleanBase64 } }
       : { type: 'image', source: { type: 'url', url: imageUrl } }
     const analysisPrompt = `Analyze this marketing creative and return ONLY a JSON object with this structure:
     {"overall_score":<0-100>,"scores":{"visual_impact":<0-100>,"message_clarity":<0-100>,"cta_strength":<0-100>,"brand_consistency":<0-100>,"emotional_appeal":<0-100>},"summary":"<assessment>","strengths":["s1","s2","s3"],"improvements":["i1","i2","i3"],"heatmap_zones":[{"x":<0-100>,"y":<0-100>,"intensity":<0-100>,"label":"<zone>"}],"target_audience":"<desc>","best_platform":"<platform>"}
