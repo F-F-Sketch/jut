@@ -28,9 +28,7 @@ export default function SocialPage() {
   const igTriggers = automations.filter(a => a.trigger?.platform === 'instagram')
 
   function connectIG() {
-    toast('Instagram connection requires a Meta Business App.
-
-To connect: go to developers.facebook.com, create an app with Instagram Basic Display API, then add your token in Settings â Integrations.', { duration: 6000, icon: 'â¹ï¸' })
+    toast('Instagram requires a Meta Business App. Go to developers.facebook.com, create an app, get an Instagram token, then add it in Settings.', { duration: 6000, icon: 'ℹ️' })
   }
 
   const TRIGGERS = [
@@ -57,12 +55,12 @@ To connect: go to developers.facebook.com, create an app with Instagram Basic Di
             <div>
               <div style={{fontWeight:800,fontSize:18,color:'var(--text)'}}>Instagram</div>
               <div style={{fontSize:13,color:'var(--text-3)',marginTop:3}}>
-                {igConnected ? 'Connected and active â automations can fire from Instagram' : 'Not connected â connect to enable Instagram automations'}
+                {igConnected ? 'Connected and active Ã¢ÂÂ automations can fire from Instagram' : 'Not connected Ã¢ÂÂ connect to enable Instagram automations'}
               </div>
               {igConnected && (
                 <div style={{display:'flex',alignItems:'center',gap:6,marginTop:6}}>
                   <CheckCircle2 size={14} color="#22c55e"/>
-                  <span style={{fontSize:12,color:'#22c55e',fontWeight:600}}>Active Â· {igTriggers.length} automation{igTriggers.length!==1?'s':''} running</span>
+                  <span style={{fontSize:12,color:'#22c55e',fontWeight:600}}>Active ÃÂ· {igTriggers.length} automation{igTriggers.length!==1?'s':''} running</span>
                 </div>
               )}
               {!igConnected && (
@@ -95,7 +93,7 @@ To connect: go to developers.facebook.com, create an app with Instagram Basic Di
             'Create a new App and add the Instagram Basic Display product',
             'Submit for App Review to get instagram_basic and instagram_manage_messages permissions',
             'Once approved, add your Instagram Business Account and generate a long-lived token',
-            'Paste your token in Settings â Integrations',
+            'Paste your token in Settings Ã¢ÂÂ Integrations',
           ].map((step, i) => (
             <div key={i} style={{display:'flex',gap:12,marginBottom:10}}>
               <div style={{width:24,height:24,borderRadius:999,background:'var(--pink)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:700,color:'#fff',flexShrink:0}}>{i+1}</div>
@@ -134,7 +132,7 @@ To connect: go to developers.facebook.com, create an app with Instagram Basic Di
                 <div style={{width:8,height:8,borderRadius:'50%',background:'#22c55e'}}/>
                 <div style={{flex:1}}>
                   <span style={{fontWeight:600,color:'var(--text)'}}>{a.name}</span>
-                  <span style={{fontSize:12,color:'var(--text-3)',marginLeft:10}}>{a.trigger?.type} {a.trigger?.keyword ? 'Â· "'+a.trigger.keyword+'"' : ''}</span>
+                  <span style={{fontSize:12,color:'var(--text-3)',marginLeft:10}}>{a.trigger?.type} {a.trigger?.keyword ? 'ÃÂ· "'+a.trigger.keyword+'"' : ''}</span>
                 </div>
               </div>
             ))}
