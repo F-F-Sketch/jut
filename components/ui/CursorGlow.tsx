@@ -12,7 +12,7 @@ export function CursorGlow() {
       left:'-600px',top:'-600px',
     })
     document.body.appendChild(el)
-    const fn = (e) => { el.style.left=e.clientX+'px'; el.style.top=e.clientY+'px' }
+    const fn = (e: MouseEvent) => { el.style.left=e.clientX+'px'; el.style.top=e.clientY+'px' }
     window.addEventListener('mousemove',fn)
     return () => { window.removeEventListener('mousemove',fn); el.remove() }
   },[])
