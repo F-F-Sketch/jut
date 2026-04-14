@@ -45,7 +45,7 @@ export function MetricCard({ label, value, prefix='', suffix='', icon: Icon, col
       {trend && (
         <div style={{marginTop:10,display:'flex',alignItems:'center',gap:5}}>
           <span style={{fontSize:12,color:trend.up?'#22c55e':'#ef4444',fontWeight:600}}>
-            {trend.up?'↑':'↓'} {trend.value}%
+            {trend.up?'â':'â'} {trend.value}%
           </span>
           <span style={{fontSize:12,color:'var(--text-4)'}}>vs last month</span>
         </div>
