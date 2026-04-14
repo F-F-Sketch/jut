@@ -12,17 +12,16 @@ export default function AnalyticsPage({ params }: { params: { locale: string } }
     (async () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
-      const [leads, convos, autos, runs] = await Promise.all([
+      const [leads, convos, autos] = await Promise.all([
         supabase.from('leads').select('id', {count:'exact'}).eq('user_id', user.id),
         supabase.from('conversations').select('id', {count:'exact'}).eq('user_id', user.id),
         supabase.from('automations').select('id', {count:'exact'}).eq('user_id', user.id).eq('status','active'),
-        supabase.from('automation_runs').select('id', {count:'exact'}).eq('user_id' as any, user.id),
       ])
       setStats({
         leads: leads.count || 0,
         conversations: convos.count || 0,
         automations: autos.count || 0,
-        fired: runs.count || 0,
+        fired: 0,
         revenue: 0,
       })
       setLoading(false)
@@ -54,7 +53,7 @@ export default function AnalyticsPage({ params }: { params: { locale: string } }
               </div>
             </div>
             <div style={{fontSize:32,fontWeight:800,color:'var(--text)',letterSpacing:-1}}>
-              {loading ? '—' : card.value}
+              {loading ? 'â' : card.value}
             </div>
           </div>
         ))}
