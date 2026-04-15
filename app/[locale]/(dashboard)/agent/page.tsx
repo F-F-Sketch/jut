@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { IconBox, IconQuestion, IconChat, IconDocument, IconPolicy, IconGraduation } from '@/components/ui/Icons'
+import { IcoBox, IcoHelpCircle, IcoMessageSquare, IcoFileText, IcoShield, IcoGraduationCap } from '@/components/ui/Icons'
 import { Bot, Save, RefreshCw, Check, MessageSquare, Zap, Target, BookOpen, Tag, Play, ChevronRight, Sparkles, Globe, Building2, User, Upload, FileText, Trash2, AlertCircle, FileType } from 'lucide-react'
 import toast from 'react-hot-toast'
 
@@ -15,11 +15,11 @@ const TABS = [
 ]
 
 const TONES = [
-  { id:'friendly', label:'Friendly', emoji:'Ã°ÂÂÂ', desc:'Warm and approachable' },
-  { id:'professional', label:'Professional', emoji:'Ã°ÂÂÂ¼', desc:'Formal and polished' },
-  { id:'casual', label:'Casual', emoji:'Ã°ÂÂÂ', desc:'Relaxed and conversational' },
-  { id:'enthusiastic', label:'Enthusiastic', emoji:'Ã°ÂÂÂ', desc:'Energetic and exciting' },
-  { id:'empathetic', label:'Empathetic', emoji:'Ã°ÂÂÂ', desc:'Understanding and caring' },
+  { id:'friendly', label:'Friendly', emoji:'ÃÂ°ÃÂÃÂÃÂ', desc:'Warm and approachable' },
+  { id:'professional', label:'Professional', emoji:'ÃÂ°ÃÂÃÂÃÂ¼', desc:'Formal and polished' },
+  { id:'casual', label:'Casual', emoji:'ÃÂ°ÃÂÃÂÃÂ', desc:'Relaxed and conversational' },
+  { id:'enthusiastic', label:'Enthusiastic', emoji:'ÃÂ°ÃÂÃÂÃÂ', desc:'Energetic and exciting' },
+  { id:'empathetic', label:'Empathetic', emoji:'ÃÂ°ÃÂÃÂÃÂ', desc:'Understanding and caring' },
 ]
 
 const RESPONSE_LENGTHS = [
@@ -34,16 +34,16 @@ const BUSINESS_TYPES = [
 ]
 
 const LANGUAGES = [
-  { code:'es', label:'EspaÃÂ±ol', flag:'Ã°ÂÂÂ¨Ã°ÂÂÂ´' },
-  { code:'en', label:'English', flag:'Ã°ÂÂÂºÃ°ÂÂÂ¸' },
-  { code:'pt', label:'PortuguÃÂªs', flag:'Ã°ÂÂÂ§Ã°ÂÂÂ·' },
-  { code:'fr', label:'FranÃÂ§ais', flag:'Ã°ÂÂÂ«Ã°ÂÂÂ·' },
+  { code:'es', label:'EspaÃÂÃÂ±ol', flag:'ÃÂ°ÃÂÃÂÃÂ¨ÃÂ°ÃÂÃÂÃÂ´' },
+  { code:'en', label:'English', flag:'ÃÂ°ÃÂÃÂÃÂºÃÂ°ÃÂÃÂÃÂ¸' },
+  { code:'pt', label:'PortuguÃÂÃÂªs', flag:'ÃÂ°ÃÂÃÂÃÂ§ÃÂ°ÃÂÃÂÃÂ·' },
+  { code:'fr', label:'FranÃÂÃÂ§ais', flag:'ÃÂ°ÃÂÃÂÃÂ«ÃÂ°ÃÂÃÂÃÂ·' },
 ]
 
 const DEFAULT_AGENT = {
   name: 'Sofia',
   role: 'Sales & Support Agent',
-  emoji: 'Ã°ÂÂÂ',
+  emoji: 'ÃÂ°ÃÂÃÂÃÂ',
   language: 'en',
   business_name: '',
   business_type: '',
@@ -183,7 +183,7 @@ export default function AgentPage() {
                 <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e', animation: 'pulse-dot 2s infinite', display: 'inline-block' }}/>
                 Active
               </span>
-              <span style={{ fontSize: 12, color: 'var(--text-4)' }}>{currentTone.emoji} {currentTone.label} ÃÂ· {currentLang.flag} {currentLang.label}</span>
+              <span style={{ fontSize: 12, color: 'var(--text-4)' }}>{currentTone.emoji} {currentTone.label} ÃÂÃÂ· {currentLang.flag} {currentLang.label}</span>
             </div>
           </div>
         </div>
@@ -216,7 +216,7 @@ export default function AgentPage() {
           <div style={{ marginTop: 12, padding: 16, borderRadius: 14, background: 'var(--surface)', border: '1px solid var(--border-2)' }}>
             <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: 0.7, marginBottom: 12 }}>Agent Summary</div>
             {[
-              { label: 'Name', val: agent.name || 'Ã¢ÂÂ' },
+              { label: 'Name', val: agent.name || 'ÃÂ¢ÃÂÃÂ' },
               { label: 'Language', val: currentLang.flag + ' ' + currentLang.label },
               { label: 'Tone', val: currentTone.emoji + ' ' + currentTone.label },
               { label: 'Response', val: agent.response_length || 'medium' },
@@ -258,7 +258,7 @@ export default function AgentPage() {
                 <div>
                   <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-3)', display: 'block', marginBottom: 10 }}>Avatar Emoji</label>
                   <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                    {['Ã°ÂÂÂ','Ã°ÂÂ¤Â','Ã°ÂÂÂ¼','Ã°ÂÂÂ','Ã°ÂÂÂ','Ã°ÂÂÂ','Ã°ÂÂÂ¯','Ã¢ÂÂ¡','Ã°ÂÂ¦Â','Ã°ÂÂ¦Â','Ã°ÂÂÂº','Ã°ÂÂÂº'].map(e => (
+                    {['ÃÂ°ÃÂÃÂÃÂ','ÃÂ°ÃÂÃÂ¤ÃÂ','ÃÂ°ÃÂÃÂÃÂ¼','ÃÂ°ÃÂÃÂÃÂ','ÃÂ°ÃÂÃÂÃÂ','ÃÂ°ÃÂÃÂÃÂ','ÃÂ°ÃÂÃÂÃÂ¯','ÃÂ¢ÃÂÃÂ¡','ÃÂ°ÃÂÃÂ¦ÃÂ','ÃÂ°ÃÂÃÂ¦ÃÂ','ÃÂ°ÃÂÃÂÃÂº','ÃÂ°ÃÂÃÂÃÂº'].map(e => (
                       <button key={e} onClick={() => upd('emoji', e)} style={{ width: 44, height: 44, borderRadius: 11, fontSize: 22, border: '2px solid ' + (agent.emoji === e ? 'var(--pink)' : 'var(--border-2)'), background: agent.emoji === e ? 'rgba(237,25,102,0.08)' : 'var(--surface-2)', cursor: 'pointer', transition: 'all 0.15s', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         {e}
                       </button>
@@ -358,7 +358,7 @@ export default function AgentPage() {
                           const traits = agent.personality_traits || []
                           upd('personality_traits', selected ? traits.filter((t:string) => t !== trait) : [...traits, trait])
                         }} style={{ padding: '7px 14px', borderRadius: 999, fontSize: 13, fontWeight: selected ? 600 : 400, border: '1px solid ' + (selected ? 'var(--pink)' : 'var(--border-2)'), background: selected ? 'rgba(237,25,102,0.1)' : 'var(--surface-2)', color: selected ? 'var(--pink)' : 'var(--text-3)', cursor: 'pointer', transition: 'all 0.15s' }}>
-                          {selected && 'Ã¢ÂÂ '}{trait}
+                          {selected && 'ÃÂ¢ÃÂÃÂ '}{trait}
                         </button>
                       )
                     })}
@@ -375,7 +375,7 @@ export default function AgentPage() {
                 <div style={{ padding:14, borderRadius:13, background:'rgba(59,130,246,0.06)', border:'1px solid rgba(59,130,246,0.15)', display:'flex', gap:10 }}>
                   <BookOpen size={16} color="#60a5fa" style={{ flexShrink:0, marginTop:1 }}/>
                   <p style={{ fontSize:13, color:'var(--text-2)', lineHeight:1.6 }}>
-                    <strong>Knowledge Base</strong> â Upload any document and your agent will use it to answer questions. Supports PDF, TXT, MD, CSV, JSON. You can also type directly below.
+                    <strong>Knowledge Base</strong> Ã¢ÂÂ Upload any document and your agent will use it to answer questions. Supports PDF, TXT, MD, CSV, JSON. You can also type directly below.
                   </p>
                 </div>
 
@@ -387,12 +387,12 @@ export default function AgentPage() {
 
                   <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(140px,1fr))', gap:10, marginBottom:14 }}>
                     {[
-                      { type:'product_catalog', label:'Product Catalog', icon:'ð¦', desc:'Products, prices, specs' },
-                      { type:'faq', label:'FAQ', icon:'â', desc:'Common questions' },
-                      { type:'chat_history', label:'Chat History', icon:'ð¬', desc:'Successful conversations' },
-                      { type:'policy', label:'Policy / Terms', icon:'ð', desc:'Policies, returns, TOS' },
-                      { type:'training', label:'Training', icon:'ð', desc:'Agent instructions' },
-                      { type:'document', label:'Other', icon:'ð', desc:'Any business doc' },
+                      { type:'product_catalog', label:'Product Catalog', icon:'Ã°ÂÂÂ¦', desc:'Products, prices, specs' },
+                      { type:'faq', label:'FAQ', icon:'Ã¢ÂÂ', desc:'Common questions' },
+                      { type:'chat_history', label:'Chat History', icon:'Ã°ÂÂÂ¬', desc:'Successful conversations' },
+                      { type:'policy', label:'Policy / Terms', icon:'Ã°ÂÂÂ', desc:'Policies, returns, TOS' },
+                      { type:'training', label:'Training', icon:'Ã°ÂÂÂ', desc:'Agent instructions' },
+                      { type:'document', label:'Other', icon:'Ã°ÂÂÂ', desc:'Any business doc' },
                     ].map(dt => (
                       <button key={dt.type} onClick={() => { if(fileUploadRef.current) { fileUploadRef.current.dataset.type = dt.type; fileUploadRef.current.click() } }}
                         style={{ padding:'12px 10px', borderRadius:12, background:'var(--surface-2)', border:'1px solid var(--border-2)', cursor:'pointer', textAlign:'center', transition:'all 0.15s', display:'flex', flexDirection:'column', alignItems:'center', gap:5 }}
@@ -442,7 +442,7 @@ export default function AgentPage() {
                       {docs.map(doc => (
                         <div key={doc.id} style={{ padding:'12px 14px', borderRadius:12, background:'var(--surface-2)', border:'1px solid var(--border-2)', display:'flex', alignItems:'center', gap:12 }}>
                           <div style={{ width:36, height:36, borderRadius:9, background:'rgba(237,25,102,0.1)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, fontSize:16 }}>
-                            {doc.type==='faq'?'â':doc.type==='chat_history'?'ð¬':doc.type==='policy'?'ð':doc.type==='product_catalog'?'ð¦':doc.type==='training'?'ð':'ð'}
+                            {doc.type==='faq'?'Ã¢ÂÂ':doc.type==='chat_history'?'Ã°ÂÂÂ¬':doc.type==='policy'?'Ã°ÂÂÂ':doc.type==='product_catalog'?'Ã°ÂÂÂ¦':doc.type==='training'?'Ã°ÂÂÂ':'Ã°ÂÂÂ'}
                           </div>
                           <div style={{ flex:1, minWidth:0 }}>
                             <div style={{ fontSize:13, fontWeight:600, color:'var(--text)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{doc.name}</div>
@@ -471,7 +471,7 @@ export default function AgentPage() {
                   <div style={{ fontSize:13, fontWeight:700, color:'var(--text)', marginBottom:6, display:'flex', alignItems:'center', gap:7 }}>
                     <BookOpen size={15} color="var(--pink)"/> Quick Text Knowledge
                   </div>
-                  <p style={{ fontSize:12, color:'var(--text-4)', marginBottom:8 }}>Type directly here for quick info â prices, hours, policies, anything the agent should always know</p>
+                  <p style={{ fontSize:12, color:'var(--text-4)', marginBottom:8 }}>Type directly here for quick info Ã¢ÂÂ prices, hours, policies, anything the agent should always know</p>
                   <textarea
                     value={agent.knowledge}
                     onChange={e => upd('knowledge', e.target.value)}
