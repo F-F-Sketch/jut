@@ -70,7 +70,7 @@ export default function SocialPage() {
   function getCount(id:string) { return automations.filter(a => a.trigger?.platform === id).length }
 
   function handleConnect(network: typeof NETWORKS[0]) {
-    if (network.status === 'coming_soon') { toast('Coming soon! We are building the ' + network.name + ' integration.', { icon:'🔔', duration:3000 }); return }
+    if (network.status === 'coming_soon') { toast('Coming soon! We are building the ' + network.name + ' integration.', { icon:'ð', duration:3000 }); return }
     if (network.oauthPath) window.location.href = network.oauthPath
   }
 
@@ -108,7 +108,7 @@ export default function SocialPage() {
                   <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap',marginBottom:3}}>
                     <span style={{fontWeight:700,fontSize:16,color:'var(--text)'}}>{network.name}</span>
                     {network.status==='coming_soon'&&<span style={{fontSize:11,padding:'2px 8px',borderRadius:999,background:'rgba(251,191,36,0.1)',color:'#fbbf24',fontWeight:600}}>Coming Soon</span>}
-                    {connected&&<span style={{fontSize:11,padding:'2px 8px',borderRadius:999,background:'rgba(34,197,94,0.1)',color:'#22c55e',fontWeight:600,display:'flex',alignItems:'center',gap:4}}><CheckCircle2 size={11}/> Connected{integration?.account_name?' · '+integration.account_name:''}</span>}
+                    {connected&&<span style={{fontSize:11,padding:'2px 8px',borderRadius:999,background:'rgba(34,197,94,0.1)',color:'#22c55e',fontWeight:600,display:'flex',alignItems:'center',gap:4}}><CheckCircle2 size={11}/> Connected{integration?.account_name?' Â· '+integration.account_name:''}</span>}
                     {count>0&&<span style={{fontSize:11,color:'#22c55e'}}>{count} automation{count!==1?'s':''}</span>}
                   </div>
                   <div style={{fontSize:13,color:'var(--text-3)'}}>{network.desc}</div>
