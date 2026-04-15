@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
       try { textContent = JSON.stringify(JSON.parse(raw), null, 2) } catch { textContent = raw }
     } else {
       // For other files, store the base64 and extract text via Claude
-      const base64 = btoa(String.fromCharCode(...bytes))
+      const base64 = Buffer.from(buffer).toString('base64')
       const mediaType = file.type || 'application/octet-stream'
 
       // Use Claude to extract text from the document
@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
             role: 'user',
             content: [
               { type: 'document', source: { type: 'base64', media_type: mediaType, data: base64 } },
-              { type: 'text', text: 'Extract ALL text content from this document. Return only the extracted text, preserve structure with newlines. No summaries, no explanations — just the complete text.' }
+              { type: 'text', text: 'Extract ALL text content from this document. Return only the extracted text, preserve structure with newlines. No summaries, no explanations â just the complete text.' }
             ]
           }]
         })
@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
         const claudeData = await claudeRes.json()
         textContent = claudeData.content?.[0]?.text || ''
       } else {
-        textContent = '[Document uploaded — text extraction failed. Add Anthropic API credits to enable extraction.]'
+        textContent = '[Document uploaded â text extraction failed. Add Anthropic API credits to enable extraction.]'
       }
     }
 
