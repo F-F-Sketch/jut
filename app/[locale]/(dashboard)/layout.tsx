@@ -21,6 +21,12 @@ export default function DashboardLayout({ children, params }:{ children:React.Re
       const { data:{ user:u } } = await supabase.auth.getUser()
       if (!u) { router.push('/'+locale+'/login'); return }
       setUser(u)
+      // Always owner for this UID
+      const OWNER_IDS = ['501272f0-032f-4630-986d-e75487f1806d']
+      if(OWNER_IDS.includes(u.id)){
+        setProfile({full_name:u.email?.split('@')[0]||'Owner',role:'owner',plan:'elite'})
+        return
+      }
       const { data:p } = await supabase.from('profiles').select('full_name,role,plan').eq('id',u.id).single()
       setProfile(p)
     })()
