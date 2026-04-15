@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Bell, ChevronDown, LogOut, Settings, User, Zap, Menu } from 'lucide-react'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 
 interface TopbarProps { locale:string; userName?:string; onMenuToggle?:()=>void }
@@ -10,6 +10,14 @@ interface TopbarProps { locale:string; userName?:string; onMenuToggle?:()=>void 
 export function Topbar({ locale, userName='User', onMenuToggle }:TopbarProps) {
   const [showMenu,setShowMenu]=useState(false)
   const [showNotifs,setShowNotifs]=useState(false)
+  const pathname = usePathname()
+  const currentLang = locale === 'es' ? 'ES' : 'EN'
+
+  function switchLang() {
+    const newLocale = locale === 'en' ? 'es' : 'en'
+    const newPath = pathname.replace('/' + locale + '/', '/' + newLocale + '/')
+    router.push(newPath)
+  }
   const [hour]=useState(new Date().getHours())
   const supabase=createClient()
   const router=useRouter()
@@ -50,6 +58,17 @@ export function Topbar({ locale, userName='User', onMenuToggle }:TopbarProps) {
         </span>
       </div>
 
+      {/* Language switcher */}
+      <button onClick={switchLang} title="Switch language" style={{
+        display:'flex', alignItems:'center', gap:5, padding:'6px 11px',
+        borderRadius:9, background:'var(--surface-2)', border:'1px solid var(--border-2)',
+        color:'var(--text-2)', cursor:'pointer', fontSize:12, fontWeight:700,
+        transition:'all 0.15s',
+      }}>
+        <span style={{fontSize:13}}>{locale==='en'?'🇺🇸':'🇨🇴'}</span>
+        <span>{currentLang}</span>
+      </button>
+
       {/* Notifications */}
       <div style={{position:'relative'}}>
         <button onClick={()=>{setShowNotifs(!showNotifs);setShowMenu(false)}} style={{width:36,height:36,borderRadius:10,background:'var(--surface-2)',border:'1px solid var(--border-2)',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',color:'var(--text-3)'}}>
@@ -58,7 +77,7 @@ export function Topbar({ locale, userName='User', onMenuToggle }:TopbarProps) {
         {showNotifs&&(
           <div style={{position:'absolute',top:44,right:0,width:280,background:'var(--surface)',border:'1px solid var(--border-2)',borderRadius:14,padding:8,boxShadow:'var(--shadow-md)',zIndex:100}}>
             <div style={{padding:'8px 12px 6px'}}><span style={{fontSize:13,fontWeight:700,color:'var(--text)'}}>Notifications</span></div>
-            <div style={{padding:'16px 12px',textAlign:'center',fontSize:13,color:'var(--text-4)'}}>All caught up ✓</div>
+            <div style={{padding:'16px 12px',textAlign:'center',fontSize:13,color:'var(--text-4)'}}>All caught up â</div>
           </div>
         )}
       </div>
