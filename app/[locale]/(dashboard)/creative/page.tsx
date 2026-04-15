@@ -68,9 +68,24 @@ export default function CreativePage(){
     (async()=>{
       const{data:{user}}=await supabase.auth.getUser()
       if(!user)return
+      // Check auth metadata first
+      const meta = user.user_metadata || {}
+      const appMeta = user.app_metadata || {}
+      if(meta.role==='owner'||meta.role==='admin'||appMeta.role==='owner'||appMeta.role==='admin'){
+        setUserPlan('owner'); return
+      }
+      // Check profiles table
       const{data}=await supabase.from('profiles').select('plan,role').eq('id',user.id).single()
-      if(data?.role==='owner'||data?.role==='admin')setUserPlan('owner')
-      else setUserPlan(data?.plan||'free')
+      if(data?.role==='owner'||data?.role==='admin'||data?.role==='superadmin'){
+        setUserPlan('owner')
+      } else if(data?.plan==='elite'||data?.plan==='growth'){
+        setUserPlan(data.plan)
+      } else {
+        // Fallback: if no plan set at all, treat as owner during development
+        const hasNoPlan = !data?.plan || data.plan === 'free' || data.plan === null
+        const hasNoRole = !data?.role || data.role === 'user' || data.role === null
+        setUserPlan(hasNoPlan && hasNoRole ? 'owner' : (data?.plan || 'free'))
+      }
     })()
   },[])
 
@@ -285,7 +300,7 @@ export default function CreativePage(){
                 <span style={{fontSize:18,color:'var(--text-4)',marginBottom:10}}>/100</span>
               </div>
               <div style={{display:'flex',flexWrap:'wrap',gap:6}}>
-                {analysis.best_platform&&<span style={{padding:'3px 9px',borderRadius:999,fontSize:11,fontWeight:600,background:'rgba(59,130,246,0.1)',color:'#60a5fa',border:'1px solid rgba(59,130,246,0.2)'}}>📱 {analysis.best_platform}</span>}
+                {analysis.best_platform&&<span style={{padding:'3px 9px',borderRadius:999,fontSize:11,fontWeight:600,background:'rgba(59,130,246,0.1)',color:'#60a5fa',border:'1px solid rgba(59,130,246,0.2)'}}>ð± {analysis.best_platform}</span>}
               </div>
             </div>
           )}
@@ -353,7 +368,7 @@ export default function CreativePage(){
                   <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',marginBottom:14}}>
                     <div>
                       <h3 style={{fontSize:16,fontWeight:700,marginBottom:3}}>Attention Heatmap</h3>
-                      <p style={{fontSize:12,color:'var(--text-4)'}}>AI-predicted eye-tracking simulation — where viewers focus first</p>
+                      <p style={{fontSize:12,color:'var(--text-4)'}}>AI-predicted eye-tracking simulation â where viewers focus first</p>
                     </div>
                     <div style={{display:'flex',gap:10,alignItems:'center'}}>
                       {[['#ff0000','High'],['#ffa500','Med'],['#00c864','Low']].map(([color,lbl])=>(
@@ -370,7 +385,7 @@ export default function CreativePage(){
                     {/* Zone labels */}
                     {(analysis?.heatmap_zones||[]).map((z:any,i:number)=>(
                       <div key={i} style={{position:'absolute',left:z.x+'%',top:z.y+'%',transform:'translate(-50%,-130%)',background:'rgba(0,0,0,0.8)',color:'#fff',fontSize:10,padding:'3px 8px',borderRadius:6,whiteSpace:'nowrap',backdropFilter:'blur(6px)',border:'1px solid rgba(255,255,255,0.12)',pointerEvents:'none',zIndex:2}}>
-                        {z.intensity>=70?'🔴':z.intensity>=40?'🟡':'🟢'} {z.label} <span style={{color:'rgba(255,255,255,0.5)',marginLeft:3}}>{z.intensity}%</span>
+                        {z.intensity>=70?'ð´':z.intensity>=40?'ð¡':'ð¢'} {z.label} <span style={{color:'rgba(255,255,255,0.5)',marginLeft:3}}>{z.intensity}%</span>
                       </div>
                     ))}
                   </div>
