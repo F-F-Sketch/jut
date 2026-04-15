@@ -58,11 +58,12 @@ export default function CreativePage(){
   const [history,setHistory]=useState<any[]>([])
   const [historyLoaded,setHistoryLoaded]=useState(false)
   const [dragOver,setDragOver]=useState(false)
-  const [userPlan,setUserPlan]=useState('owner')
+  const [userPlan,setUserPlan]=useState('owner') // default owner
   const fileRef=useRef<HTMLInputElement>(null)
   const heatCanvas=useRef<HTMLCanvasElement>(null)
   const heatImg=useRef<HTMLImageElement>(null)
   const supabase=createClient()
+  const OWNER_ID='501272f0-032f-4630-986d-e75487f1806d'
 
   useEffect(()=>{
     (async()=>{
@@ -300,7 +301,7 @@ export default function CreativePage(){
                 <span style={{fontSize:18,color:'var(--text-4)',marginBottom:10}}>/100</span>
               </div>
               <div style={{display:'flex',flexWrap:'wrap',gap:6}}>
-                {analysis.best_platform&&<span style={{padding:'3px 9px',borderRadius:999,fontSize:11,fontWeight:600,background:'rgba(59,130,246,0.1)',color:'#60a5fa',border:'1px solid rgba(59,130,246,0.2)'}}>ð± {analysis.best_platform}</span>}
+                {analysis.best_platform&&<span style={{padding:'3px 9px',borderRadius:999,fontSize:11,fontWeight:600,background:'rgba(59,130,246,0.1)',color:'#60a5fa',border:'1px solid rgba(59,130,246,0.2)'}}>Ã°ÂÂÂ± {analysis.best_platform}</span>}
               </div>
             </div>
           )}
@@ -368,7 +369,7 @@ export default function CreativePage(){
                   <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',marginBottom:14}}>
                     <div>
                       <h3 style={{fontSize:16,fontWeight:700,marginBottom:3}}>Attention Heatmap</h3>
-                      <p style={{fontSize:12,color:'var(--text-4)'}}>AI-predicted eye-tracking simulation â where viewers focus first</p>
+                      <p style={{fontSize:12,color:'var(--text-4)'}}>AI-predicted eye-tracking simulation Ã¢ÂÂ where viewers focus first</p>
                     </div>
                     <div style={{display:'flex',gap:10,alignItems:'center'}}>
                       {[['#ff0000','High'],['#ffa500','Med'],['#00c864','Low']].map(([color,lbl])=>(
@@ -385,7 +386,7 @@ export default function CreativePage(){
                     {/* Zone labels */}
                     {(analysis?.heatmap_zones||[]).map((z:any,i:number)=>(
                       <div key={i} style={{position:'absolute',left:z.x+'%',top:z.y+'%',transform:'translate(-50%,-130%)',background:'rgba(0,0,0,0.8)',color:'#fff',fontSize:10,padding:'3px 8px',borderRadius:6,whiteSpace:'nowrap',backdropFilter:'blur(6px)',border:'1px solid rgba(255,255,255,0.12)',pointerEvents:'none',zIndex:2}}>
-                        {z.intensity>=70?'ð´':z.intensity>=40?'ð¡':'ð¢'} {z.label} <span style={{color:'rgba(255,255,255,0.5)',marginLeft:3}}>{z.intensity}%</span>
+                        {z.intensity>=70?'Ã°ÂÂÂ´':z.intensity>=40?'Ã°ÂÂÂ¡':'Ã°ÂÂÂ¢'} {z.label} <span style={{color:'rgba(255,255,255,0.5)',marginLeft:3}}>{z.intensity}%</span>
                       </div>
                     ))}
                   </div>
