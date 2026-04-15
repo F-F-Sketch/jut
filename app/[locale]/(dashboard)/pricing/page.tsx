@@ -80,14 +80,14 @@ export default function PricingPage({ params }:{ params:{ locale:string } }) {
       {/* Header */}
       <div style={{textAlign:'center',marginBottom:40}}>
         <div style={{display:'inline-flex',alignItems:'center',gap:6,padding:'4px 14px',borderRadius:999,background:'rgba(237,25,102,0.08)',border:'1px solid rgba(237,25,102,0.2)',marginBottom:14}}>
-          <span style={{fontSize:11,fontWeight:700,color:'var(--pink)',letterSpacing:0.5}}>⚡ PRICING</span>
+          <span style={{fontSize:11,fontWeight:700,color:'var(--pink)',letterSpacing:0.5}}>â¡ PRICING</span>
         </div>
         <h1 style={{fontSize:'clamp(24px,4vw,44px)',fontWeight:900,letterSpacing:-1.5,marginBottom:12,lineHeight:1.05}}>Simple, transparent pricing</h1>
         <p style={{fontSize:'clamp(14px,1.5vw,16px)',color:'var(--text-3)',maxWidth:460,margin:'0 auto 20px',lineHeight:1.6}}>Start free. Scale when ready. No hidden fees.</p>
         <div style={{display:'inline-flex',background:'var(--surface)',border:'1px solid var(--border-2)',borderRadius:12,padding:4}}>
           {(['cop','usd'] as const).map(c=>(
             <button key={c} onClick={()=>setCurrency(c)} style={{padding:'7px 18px',borderRadius:9,border:'none',cursor:'pointer',fontWeight:700,fontSize:13,background:currency===c?'var(--pink)':'transparent',color:currency===c?'#fff':'var(--text-3)',transition:'all 0.15s'}}>
-              {c==='cop'?'🇨🇴 COP':'🌎 USD'}
+              {c==='cop'?'ð¨ð´ COP':'ð USD'}
             </button>
           ))}
         </div>
@@ -114,7 +114,7 @@ export default function PricingPage({ params }:{ params:{ locale:string } }) {
             </div>
             <div style={{marginBottom:20}}>
               <span style={{fontSize:plan.cop===0?40:34,fontWeight:900,color:plan.highlight?'var(--pink)':'var(--text)',letterSpacing:-1.5,lineHeight:1,fontFamily:'var(--font-display)'}}>{price(plan)}</span>
-              {plan.cop>0&&<div style={{fontSize:12,color:'var(--text-4)',marginTop:3}}>per month · cancel anytime</div>}
+              {plan.cop>0&&<div style={{fontSize:12,color:'var(--text-4)',marginTop:3}}>per month Â· cancel anytime</div>}
             </div>
 
             {/* Payment buttons */}
@@ -127,14 +127,14 @@ export default function PricingPage({ params }:{ params:{ locale:string } }) {
                 <button
                   onClick={()=>checkout(plan.id,'wompi')}
                   disabled={loading===plan.id+'wompi'}
-                  style={{width:'100%',padding:'11px',borderRadius:11,border:'none',background:plan.highlight?'var(--pink)':'var(--surface-2)',color:plan.highlight?'#fff':'var(--text)',fontSize:13,fontWeight:700,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:7,border:plan.highlight?'none':'1px solid var(--border-2)',transition:'all 0.2s',opacity:loading===plan.id+'wompi'?0.7:1}}>
-                  {loading===plan.id+'wompi'?'Redirecting...':<>🇨🇴 Pay with Wompi (COP)</>}
+                  style={{width:'100%',padding:'11px',borderRadius:11,background:plan.highlight?'var(--pink)':'var(--surface-2)',color:plan.highlight?'#fff':'var(--text)',fontSize:13,fontWeight:700,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:7,border:plan.highlight?'none':'1px solid var(--border-2)',transition:'all 0.2s',opacity:loading===plan.id+'wompi'?0.7:1}}>
+                  {loading===plan.id+'wompi'?'Redirecting...':<>ð¨ð´ Pay with Wompi (COP)</>}
                 </button>
                 <button
                   onClick={()=>checkout(plan.id,'stripe')}
                   disabled={loading===plan.id+'stripe'}
                   style={{width:'100%',padding:'11px',borderRadius:11,border:'1px solid var(--border-2)',background:'var(--surface-2)',color:'var(--text-2)',fontSize:13,fontWeight:600,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:7,transition:'all 0.2s',opacity:loading===plan.id+'stripe'?0.7:1}}>
-                  {loading===plan.id+'stripe'?'Redirecting...':<>🌎 Pay with Stripe (USD)</>}
+                  {loading===plan.id+'stripe'?'Redirecting...':<>ð Pay with Stripe (USD)</>}
                 </button>
               </div>
             )}
@@ -144,7 +144,7 @@ export default function PricingPage({ params }:{ params:{ locale:string } }) {
               {plan.features.map((f,i)=>(
                 <div key={i} style={{display:'flex',alignItems:'center',gap:9}}>
                   <div style={{width:17,height:17,borderRadius:'50%',background:f.ok?(plan.highlight?'rgba(237,25,102,0.15)':'rgba(34,197,94,0.12)'):'var(--surface-2)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
-                    <span style={{color:f.ok?(plan.highlight?'var(--pink)':'#22c55e'):'var(--text-4)',fontSize:10,fontWeight:900,lineHeight:1}}>{f.ok?'✓':'✕'}</span>
+                    <span style={{color:f.ok?(plan.highlight?'var(--pink)':'#22c55e'):'var(--text-4)',fontSize:10,fontWeight:900,lineHeight:1}}>{f.ok?'â':'â'}</span>
                   </div>
                   <span style={{fontSize:12,color:f.ok?'var(--text-2)':'var(--text-4)'}}>{f.t}</span>
                 </div>
@@ -155,10 +155,10 @@ export default function PricingPage({ params }:{ params:{ locale:string } }) {
       </div>
 
       <div style={{padding:18,borderRadius:14,background:'rgba(237,25,102,0.04)',border:'1px solid rgba(237,25,102,0.12)',display:'flex',alignItems:'center',gap:12,flexWrap:'wrap'}}>
-        <div style={{fontSize:22}}>🇨🇴</div>
+        <div style={{fontSize:22}}>ð¨ð´</div>
         <div>
           <div style={{fontSize:14,fontWeight:700,color:'var(--text)',marginBottom:2}}>Colombian payment methods available</div>
-          <div style={{fontSize:12,color:'var(--text-3)'}}>PSE · Nequi · Bancolombia QR · Credit/debit cards — all via Wompi</div>
+          <div style={{fontSize:12,color:'var(--text-3)'}}>PSE Â· Nequi Â· Bancolombia QR Â· Credit/debit cards â all via Wompi</div>
         </div>
       </div>
     </div>
