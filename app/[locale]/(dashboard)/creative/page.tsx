@@ -1,12 +1,12 @@
 'use client'
 import React from 'react'
-import { createClient, getUser } from '@/lib/supabase/server'
+import { createClient, getUser } from '@/lib/supabase/client'
 import Link from 'next/link'
 import { Brain, Upload, FlaskConical, BarChart3, ArrowRight, Sparkles, TrendingUp, Eye } from 'lucide-react'
 
 export default async function CreativePage({ params }: { params: { locale: string } }) {
   const { locale } = params
-  const supabase = await createClient()
+  const supabase = createClient()
   const user = await getUser()
   let stats = { analyses: 0, experiments: 0, avg_score: 0, enhancements: 0 }
   let recentAnalyses: any[] = []
@@ -49,8 +49,8 @@ export default async function CreativePage({ params }: { params: { locale: strin
       </div>
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
         {[
-          {label: loc === 'es' ? 'AnÃ¡lisis realizados' : 'Analyses run', value: stats.analyses, icon: Brain, color: 'var(--pink)'},
-          {label: loc === 'es' ? 'Score promedio' : 'Average score', value: stats.avg_score ? stats.avg_score + '/100' : 'â', icon: TrendingUp, color: '#22c55e'},
+          {label: loc === 'es' ? 'AnÃÂ¡lisis realizados' : 'Analyses run', value: stats.analyses, icon: Brain, color: 'var(--pink)'},
+          {label: loc === 'es' ? 'Score promedio' : 'Average score', value: stats.avg_score ? stats.avg_score + '/100' : 'Ã¢ÂÂ', icon: TrendingUp, color: '#22c55e'},
           {label: loc === 'es' ? 'Mejoras generadas' : 'Enhancements', value: stats.enhancements, icon: Sparkles, color: '#4a90d9'},
           {label: loc === 'es' ? 'Experimentos' : 'Experiments', value: stats.experiments, icon: FlaskConical, color: '#f59e0b'},
         ].map(({label, value, icon: Icon, color}) => (
@@ -65,10 +65,10 @@ export default async function CreativePage({ params }: { params: { locale: strin
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
         {[
-          {href:'/'+locale+'/creative/analyzer',icon:Eye,label:loc==='es'?'Analizador':'Analyzer',desc:loc==='es'?'Sube un creativo y obtÃ©n anÃ¡lisis con scores y heatmap':'Upload a creative and get scores, heatmap, recommendations',color:'var(--pink)',badge:'AI'},
-          {href:'/'+locale+'/creative/analyzer',icon:Sparkles,label:loc==='es'?'Mejorador':'Enhancer',desc:loc==='es'?'JUT genera una versiÃ³n mejorada de tu creativo':'JUT generates an optimized version of your creative',color:'#4a90d9',badge:loc==='es'?'IA Generativa':'Generative AI'},
+          {href:'/'+locale+'/creative/analyzer',icon:Eye,label:loc==='es'?'Analizador':'Analyzer',desc:loc==='es'?'Sube un creativo y obtÃÂ©n anÃÂ¡lisis con scores y heatmap':'Upload a creative and get scores, heatmap, recommendations',color:'var(--pink)',badge:'AI'},
+          {href:'/'+locale+'/creative/analyzer',icon:Sparkles,label:loc==='es'?'Mejorador':'Enhancer',desc:loc==='es'?'JUT genera una versiÃÂ³n mejorada de tu creativo':'JUT generates an optimized version of your creative',color:'#4a90d9',badge:loc==='es'?'IA Generativa':'Generative AI'},
           {href:'/'+locale+'/creative/experiments',icon:FlaskConical,label:loc==='es'?'Experimentos':'Experiments',desc:loc==='es'?'Crea tests A/B y multivariados para tus creativos':'Create A/B and multivariate tests for your creatives',color:'#f59e0b',badge:'A/B'},
-          {href:'/'+locale+'/creative/reports',icon:BarChart3,label:loc==='es'?'Reportes':'Reports',desc:loc==='es'?'Exporta anÃ¡lisis y reportes de performance':'Export analyses and performance reports',color:'#22c55e',badge:'PDF'},
+          {href:'/'+locale+'/creative/reports',icon:BarChart3,label:loc==='es'?'Reportes':'Reports',desc:loc==='es'?'Exporta anÃÂ¡lisis y reportes de performance':'Export analyses and performance reports',color:'#22c55e',badge:'PDF'},
         ].map(({href,icon:Icon,label,desc,color,badge}) => (
           <Link key={href+label} href={href} className="rounded-2xl p-6 flex flex-col gap-4 transition-all hover:opacity-90" style={{background:'var(--surface)',border:'1px solid var(--border-2)'}}>
             <div className="flex items-start justify-between">
@@ -93,10 +93,10 @@ export default async function CreativePage({ params }: { params: { locale: strin
             <Brain size={28} style={{color:'var(--pink)'}} />
           </div>
           <h3 className="font-display font-bold text-xl mb-2" style={{color:'var(--text)'}}>
-            {loc === 'es' ? 'Tu inteligencia creativa empieza aquÃ­' : 'Your creative intelligence starts here'}
+            {loc === 'es' ? 'Tu inteligencia creativa empieza aquÃÂ­' : 'Your creative intelligence starts here'}
           </h3>
           <p className="text-sm max-w-md mb-6" style={{color:'var(--text-3)'}}>
-            {loc === 'es' ? 'Sube cualquier creativo de marketing â JUT lo analizarÃ¡ con IA.' : 'Upload any marketing creative â JUT will analyze it with AI.'}
+            {loc === 'es' ? 'Sube cualquier creativo de marketing Ã¢ÂÂ JUT lo analizarÃÂ¡ con IA.' : 'Upload any marketing creative Ã¢ÂÂ JUT will analyze it with AI.'}
           </p>
           <Link href={'/' + locale + '/creative/analyzer'} className="flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-bold" style={{background:'var(--pink)',color:'#fff'}}>
             <Upload size={14} />
