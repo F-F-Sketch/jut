@@ -35,6 +35,7 @@ const ADMIN_NAV = [
   { href:'admin', label:'Admin Panel', icon:Shield },
   { href:'customization', label:'Customization', icon:Sparkles },
   { href:'landing-builder', label:'Landing Builder', icon:LayoutDashboard },
+  { href:'pricing-editor', label:'Pricing Editor', icon:Star },
 ]
 
 interface SidebarProps { locale:string; userRole?:string; mobileOpen?:boolean; onClose?:()=>void }
