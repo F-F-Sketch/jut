@@ -22,7 +22,7 @@ function getDefaultConfig() {
   return {
     hero: {
       headline: 'Automate Every Conversation.',
-      subheadline: 'JUT connects to Instagram, WhatsApp and more — capturing leads and closing deals while you sleep.',
+      subheadline: 'JUT connects to Instagram, WhatsApp and more â capturing leads and closing deals while you sleep.',
       cta_primary: 'Get Started Free',
       cta_secondary: 'See how it works',
       bg_color: '#050508',
@@ -30,24 +30,24 @@ function getDefaultConfig() {
     features: {
       title: 'Everything you need to automate',
       items: [
-        { icon: '🤖', title: 'AI Agent', desc: '24/7 automated responses that sound 100% human' },
-        { icon: '⚡', title: 'Automations', desc: 'Set triggers, fire flows instantly' },
-        { icon: '📊', title: 'Analytics', desc: 'Real-time insights on every conversation' },
-        { icon: '🎨', title: 'Creative AI', desc: 'Score and improve your marketing creatives' },
+        { icon: 'ð¤', title: 'AI Agent', desc: '24/7 automated responses that sound 100% human' },
+        { icon: 'â¡', title: 'Automations', desc: 'Set triggers, fire flows instantly' },
+        { icon: 'ð', title: 'Analytics', desc: 'Real-time insights on every conversation' },
+        { icon: 'ð¨', title: 'Creative AI', desc: 'Score and improve your marketing creatives' },
       ]
     },
     stats: {
       items: [
         { value: '<3s', label: 'Response time' },
         { value: '24/7', label: 'Always on' },
-        { value: '2×', label: 'Conversion uplift' },
-        { value: '∞', label: 'Conversations' },
+        { value: '2Ã', label: 'Conversion uplift' },
+        { value: 'â', label: 'Conversations' },
       ]
     },
     cta: {
       title: 'Ready to automate?',
       subtitle: 'Start free. Scale fast.',
-      button: 'Get Started — It's Free',
+      button: 'Get Started â It's Free',
     },
     navbar: {
       logo: 'JUT',
