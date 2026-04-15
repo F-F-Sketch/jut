@@ -5,7 +5,7 @@ import {
   LayoutDashboard, Users, MessageSquare, Zap, BarChart3,
   Settings, Share2, ShoppingBag, Bot, Sparkles, HelpCircle,
   Shield, ChevronRight, Crown
-} from 'lucide-react'
+, Star } from 'lucide-react'
 
 const NAV = [
   { group: 'Main', items: [
