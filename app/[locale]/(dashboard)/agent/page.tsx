@@ -1,7 +1,7 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Bot, Save, RefreshCw, Check, MessageSquare, Zap, Target, BookOpen, Tag, Play, ChevronRight, Sparkles, Globe, Building2, User } from 'lucide-react'
+import { Bot, Save, RefreshCw, Check, MessageSquare, Zap, Target, BookOpen, Tag, Play, ChevronRight, Sparkles, Globe, Building2, User, Upload, FileText, Trash2, AlertCircle, FileType } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 const TABS = [
@@ -14,11 +14,11 @@ const TABS = [
 ]
 
 const TONES = [
-  { id:'friendly', label:'Friendly', emoji:'😊', desc:'Warm and approachable' },
-  { id:'professional', label:'Professional', emoji:'💼', desc:'Formal and polished' },
-  { id:'casual', label:'Casual', emoji:'😎', desc:'Relaxed and conversational' },
-  { id:'enthusiastic', label:'Enthusiastic', emoji:'🚀', desc:'Energetic and exciting' },
-  { id:'empathetic', label:'Empathetic', emoji:'💙', desc:'Understanding and caring' },
+  { id:'friendly', label:'Friendly', emoji:'ð', desc:'Warm and approachable' },
+  { id:'professional', label:'Professional', emoji:'ð¼', desc:'Formal and polished' },
+  { id:'casual', label:'Casual', emoji:'ð', desc:'Relaxed and conversational' },
+  { id:'enthusiastic', label:'Enthusiastic', emoji:'ð', desc:'Energetic and exciting' },
+  { id:'empathetic', label:'Empathetic', emoji:'ð', desc:'Understanding and caring' },
 ]
 
 const RESPONSE_LENGTHS = [
@@ -33,16 +33,16 @@ const BUSINESS_TYPES = [
 ]
 
 const LANGUAGES = [
-  { code:'es', label:'Español', flag:'🇨🇴' },
-  { code:'en', label:'English', flag:'🇺🇸' },
-  { code:'pt', label:'Português', flag:'🇧🇷' },
-  { code:'fr', label:'Français', flag:'🇫🇷' },
+  { code:'es', label:'EspaÃ±ol', flag:'ð¨ð´' },
+  { code:'en', label:'English', flag:'ðºð¸' },
+  { code:'pt', label:'PortuguÃªs', flag:'ð§ð·' },
+  { code:'fr', label:'FranÃ§ais', flag:'ð«ð·' },
 ]
 
 const DEFAULT_AGENT = {
   name: 'Sofia',
   role: 'Sales & Support Agent',
-  emoji: '😊',
+  emoji: 'ð',
   language: 'en',
   business_name: '',
   business_type: '',
@@ -65,15 +65,51 @@ export default function AgentPage() {
   const [testReply, setTestReply] = useState('')
   const [testing, setTesting] = useState(false)
   const [chatHistory, setChatHistory] = useState<{role:string;msg:string}[]>([])
+  const [docs, setDocs] = useState<any[]>([])
+  const [docsLoading, setDocsLoading] = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState('')
+  const fileUploadRef = useRef<HTMLInputElement>(null)
   const supabase = createClient()
 
-  useEffect(() => { load() }, [])
+  useEffect(() => { load(); loadDocs() }, [])
 
   async function load() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
     const { data } = await supabase.from('agent_configs').select('*').eq('user_id', user.id).single()
     if (data) setAgent({ ...DEFAULT_AGENT, ...data.config })
+  }
+
+  async function loadDocs() {
+    setDocsLoading(true)
+    try {
+      const res = await fetch('/api/agent/knowledge')
+      const data = await res.json()
+      setDocs(data.docs || [])
+    } catch(e) {} finally { setDocsLoading(false) }
+  }
+
+  async function uploadDoc(file: File, docType: string) {
+    setUploading(true)
+    setUploadProgress('Uploading ' + file.name + '...')
+    try {
+      const form = new FormData()
+      form.append('file', file)
+      form.append('type', docType)
+      form.append('name', file.name.replace(/\.[^.]+$/, ''))
+      const res = await fetch('/api/agent/knowledge/upload', { method:'POST', body:form })
+      const data = await res.json()
+      if (!res.ok) { toast.error(data.error || 'Upload failed'); return }
+      toast.success(file.name + ' uploaded and indexed!')
+      loadDocs()
+    } catch(e:any) { toast.error(e.message) } finally { setUploading(false); setUploadProgress('') }
+  }
+
+  async function deleteDoc(id: string, name: string) {
+    if (!confirm('Delete "' + name + '"?')) return
+    const res = await fetch('/api/agent/knowledge', { method:'DELETE', headers:{'Content-Type':'application/json'}, body:JSON.stringify({id}) })
+    if (res.ok) { toast.success('Deleted'); loadDocs() } else { toast.error('Failed to delete') }
   }
 
   async function save() {
@@ -146,7 +182,7 @@ export default function AgentPage() {
                 <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e', animation: 'pulse-dot 2s infinite', display: 'inline-block' }}/>
                 Active
               </span>
-              <span style={{ fontSize: 12, color: 'var(--text-4)' }}>{currentTone.emoji} {currentTone.label} · {currentLang.flag} {currentLang.label}</span>
+              <span style={{ fontSize: 12, color: 'var(--text-4)' }}>{currentTone.emoji} {currentTone.label} Â· {currentLang.flag} {currentLang.label}</span>
             </div>
           </div>
         </div>
@@ -179,7 +215,7 @@ export default function AgentPage() {
           <div style={{ marginTop: 12, padding: 16, borderRadius: 14, background: 'var(--surface)', border: '1px solid var(--border-2)' }}>
             <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: 0.7, marginBottom: 12 }}>Agent Summary</div>
             {[
-              { label: 'Name', val: agent.name || '—' },
+              { label: 'Name', val: agent.name || 'â' },
               { label: 'Language', val: currentLang.flag + ' ' + currentLang.label },
               { label: 'Tone', val: currentTone.emoji + ' ' + currentTone.label },
               { label: 'Response', val: agent.response_length || 'medium' },
@@ -221,7 +257,7 @@ export default function AgentPage() {
                 <div>
                   <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-3)', display: 'block', marginBottom: 10 }}>Avatar Emoji</label>
                   <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                    {['😊','🤖','💼','🌟','🚀','💙','🎯','⚡','🦁','🦊','🐺','🌺'].map(e => (
+                    {['ð','ð¤','ð¼','ð','ð','ð','ð¯','â¡','ð¦','ð¦','ðº','ðº'].map(e => (
                       <button key={e} onClick={() => upd('emoji', e)} style={{ width: 44, height: 44, borderRadius: 11, fontSize: 22, border: '2px solid ' + (agent.emoji === e ? 'var(--pink)' : 'var(--border-2)'), background: agent.emoji === e ? 'rgba(237,25,102,0.08)' : 'var(--surface-2)', cursor: 'pointer', transition: 'all 0.15s', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         {e}
                       </button>
@@ -321,7 +357,7 @@ export default function AgentPage() {
                           const traits = agent.personality_traits || []
                           upd('personality_traits', selected ? traits.filter((t:string) => t !== trait) : [...traits, trait])
                         }} style={{ padding: '7px 14px', borderRadius: 999, fontSize: 13, fontWeight: selected ? 600 : 400, border: '1px solid ' + (selected ? 'var(--pink)' : 'var(--border-2)'), background: selected ? 'rgba(237,25,102,0.1)' : 'var(--surface-2)', color: selected ? 'var(--pink)' : 'var(--text-3)', cursor: 'pointer', transition: 'all 0.15s' }}>
-                          {selected && '✓ '}{trait}
+                          {selected && 'â '}{trait}
                         </button>
                       )
                     })}
@@ -332,24 +368,119 @@ export default function AgentPage() {
 
             {/* KNOWLEDGE */}
             {tab === 'knowledge' && (
-              <div style={{ display: 'grid', gap: 16 }}>
-                <div style={{ padding: 16, borderRadius: 13, background: 'rgba(59,130,246,0.06)', border: '1px solid rgba(59,130,246,0.15)' }}>
-                  <p style={{ fontSize: 13, color: 'var(--text-2)', lineHeight: 1.6 }}>
-                    <strong>What to include:</strong> Product catalog, pricing, FAQs, business hours, shipping info, return policy, team info, anything the agent needs to know to answer customer questions accurately.
+              <div style={{ display:'flex', flexDirection:'column', gap:20 }}>
+
+                {/* Info banner */}
+                <div style={{ padding:14, borderRadius:13, background:'rgba(59,130,246,0.06)', border:'1px solid rgba(59,130,246,0.15)', display:'flex', gap:10 }}>
+                  <BookOpen size={16} color="#60a5fa" style={{ flexShrink:0, marginTop:1 }}/>
+                  <p style={{ fontSize:13, color:'var(--text-2)', lineHeight:1.6 }}>
+                    <strong>Knowledge Base</strong> — Upload any document and your agent will use it to answer questions. Supports PDF, TXT, MD, CSV, JSON. You can also type directly below.
                   </p>
                 </div>
+
+                {/* Upload zone */}
                 <div>
-                  <label style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)', display: 'block', marginBottom: 6 }}>Business Knowledge Base</label>
+                  <div style={{ fontSize:13, fontWeight:700, color:'var(--text)', marginBottom:12, display:'flex', alignItems:'center', gap:7 }}>
+                    <Upload size={15} color="var(--pink)"/> Upload Documents
+                  </div>
+
+                  <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(140px,1fr))', gap:10, marginBottom:14 }}>
+                    {[
+                      { type:'product_catalog', label:'Product Catalog', icon:'📦', desc:'Products, prices, specs' },
+                      { type:'faq', label:'FAQ', icon:'❓', desc:'Common questions' },
+                      { type:'chat_history', label:'Chat History', icon:'💬', desc:'Successful conversations' },
+                      { type:'policy', label:'Policy / Terms', icon:'📋', desc:'Policies, returns, TOS' },
+                      { type:'training', label:'Training', icon:'🎓', desc:'Agent instructions' },
+                      { type:'document', label:'Other', icon:'📄', desc:'Any business doc' },
+                    ].map(dt => (
+                      <button key={dt.type} onClick={() => { if(fileUploadRef.current) { fileUploadRef.current.dataset.type = dt.type; fileUploadRef.current.click() } }}
+                        style={{ padding:'12px 10px', borderRadius:12, background:'var(--surface-2)', border:'1px solid var(--border-2)', cursor:'pointer', textAlign:'center', transition:'all 0.15s', display:'flex', flexDirection:'column', alignItems:'center', gap:5 }}
+                        onMouseEnter={e=>(e.currentTarget as HTMLButtonElement).style.borderColor='rgba(237,25,102,0.3)'}
+                        onMouseLeave={e=>(e.currentTarget as HTMLButtonElement).style.borderColor=''}>
+                        <span style={{ fontSize:22 }}>{dt.icon}</span>
+                        <span style={{ fontSize:12, fontWeight:600, color:'var(--text)' }}>{dt.label}</span>
+                        <span style={{ fontSize:10, color:'var(--text-4)', lineHeight:1.3 }}>{dt.desc}</span>
+                      </button>
+                    ))}
+                  </div>
+
+                  <input ref={fileUploadRef} type="file" accept=".pdf,.txt,.md,.csv,.json,.doc,.docx" style={{ display:'none' }}
+                    onChange={e => { const f=e.target.files?.[0]; if(f) uploadDoc(f, fileUploadRef.current?.dataset.type||'document'); e.target.value='' }}/>
+
+                  {uploading && (
+                    <div style={{ padding:14, borderRadius:11, background:'rgba(237,25,102,0.06)', border:'1px solid rgba(237,25,102,0.2)', display:'flex', alignItems:'center', gap:10, marginBottom:10 }}>
+                      <div style={{ width:16, height:16, borderRadius:'50%', border:'2px solid rgba(237,25,102,0.2)', borderTopColor:'var(--pink)', animation:'spin 0.8s linear infinite', flexShrink:0 }}/>
+                      <span style={{ fontSize:13, color:'var(--text-2)' }}>{uploadProgress}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Uploaded docs list */}
+                <div>
+                  <div style={{ fontSize:13, fontWeight:700, color:'var(--text)', marginBottom:12, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+                    <div style={{ display:'flex', alignItems:'center', gap:7 }}>
+                      <FileText size={15} color="var(--pink)"/>
+                      Uploaded Documents
+                      {docs.length > 0 && <span style={{ fontSize:11, padding:'2px 7px', borderRadius:999, background:'rgba(237,25,102,0.1)', color:'var(--pink)', fontWeight:700 }}>{docs.length}</span>}
+                    </div>
+                    <button onClick={loadDocs} style={{ background:'none', border:'none', color:'var(--text-4)', cursor:'pointer', fontSize:12, display:'flex', alignItems:'center', gap:4 }}>
+                      <RefreshCw size={11}/> Refresh
+                    </button>
+                  </div>
+
+                  {docsLoading ? (
+                    <div style={{ textAlign:'center', padding:20, color:'var(--text-4)', fontSize:13 }}>Loading documents...</div>
+                  ) : docs.length === 0 ? (
+                    <div style={{ textAlign:'center', padding:'24px 16px', borderRadius:13, background:'var(--surface-2)', border:'1px dashed var(--border-2)', color:'var(--text-4)' }}>
+                      <FileType size={28} style={{ opacity:0.2, display:'block', margin:'0 auto 8px' }}/>
+                      <p style={{ fontSize:13 }}>No documents uploaded yet</p>
+                      <p style={{ fontSize:11, marginTop:4 }}>Click a category above to upload your first document</p>
+                    </div>
+                  ) : (
+                    <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
+                      {docs.map(doc => (
+                        <div key={doc.id} style={{ padding:'12px 14px', borderRadius:12, background:'var(--surface-2)', border:'1px solid var(--border-2)', display:'flex', alignItems:'center', gap:12 }}>
+                          <div style={{ width:36, height:36, borderRadius:9, background:'rgba(237,25,102,0.1)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, fontSize:16 }}>
+                            {doc.type==='faq'?'❓':doc.type==='chat_history'?'💬':doc.type==='policy'?'📋':doc.type==='product_catalog'?'📦':doc.type==='training'?'🎓':'📄'}
+                          </div>
+                          <div style={{ flex:1, minWidth:0 }}>
+                            <div style={{ fontSize:13, fontWeight:600, color:'var(--text)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{doc.name}</div>
+                            <div style={{ fontSize:11, color:'var(--text-4)', marginTop:2, display:'flex', gap:10 }}>
+                              <span>{doc.file_name}</span>
+                              {doc.word_count > 0 && <span>{doc.word_count.toLocaleString()} words</span>}
+                              <span>{doc.type}</span>
+                            </div>
+                          </div>
+                          <div style={{ display:'flex', alignItems:'center', gap:6, flexShrink:0 }}>
+                            <span style={{ padding:'2px 8px', borderRadius:999, fontSize:10, fontWeight:600, background:'rgba(34,197,94,0.1)', color:'#22c55e', border:'1px solid rgba(34,197,94,0.2)' }}>
+                              Active
+                            </span>
+                            <button onClick={() => deleteDoc(doc.id, doc.name)} style={{ background:'none', border:'none', color:'#ef4444', cursor:'pointer', opacity:0.6, padding:4 }}>
+                              <Trash2 size={14}/>
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Manual text knowledge */}
+                <div>
+                  <div style={{ fontSize:13, fontWeight:700, color:'var(--text)', marginBottom:6, display:'flex', alignItems:'center', gap:7 }}>
+                    <BookOpen size={15} color="var(--pink)"/> Quick Text Knowledge
+                  </div>
+                  <p style={{ fontSize:12, color:'var(--text-4)', marginBottom:8 }}>Type directly here for quick info — prices, hours, policies, anything the agent should always know</p>
                   <textarea
                     value={agent.knowledge}
                     onChange={e => upd('knowledge', e.target.value)}
-                    placeholder={'Example:\n\nProducts:\n- Plan A: $29/mo - Includes X, Y, Z\n- Plan B: $79/mo - Includes everything in A plus...\n\nBusiness hours: Mon-Fri 9am-6pm (Colombia time)\n\nReturn policy: 30-day money back guarantee\n\nFrequently asked questions:\nQ: How do I cancel?\nA: Email us at support@...'}
-                    rows={16}
-                    style={{ ...inp, resize: 'vertical', lineHeight: 1.7, fontFamily: 'var(--font-body)' }}
+                    placeholder="Products:\n- Plan Growth: $79/month\n- Plan Elite: $199/month\n\nBusiness hours: Mon-Fri 9am-6pm Colombia\n\nFAQ:\nQ: How to cancel?\nA: Email support@getjut.io"
+                    rows={8}
+                    style={{ ...inp, resize:'vertical', lineHeight:1.7, fontFamily:'monospace', fontSize:13 }}
                   />
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6 }}>
-                    <p style={{ fontSize: 11, color: 'var(--text-4)' }}>More context = better responses</p>
-                    <p style={{ fontSize: 11, color: 'var(--text-4)' }}>{agent.knowledge?.length || 0} characters</p>
+                  <div style={{ display:'flex', justifyContent:'space-between', marginTop:5 }}>
+                    <p style={{ fontSize:11, color:'var(--text-4)' }}>Combines with uploaded documents</p>
+                    <p style={{ fontSize:11, color:'var(--text-4)' }}>{agent.knowledge?.length || 0} chars</p>
                   </div>
                 </div>
               </div>
