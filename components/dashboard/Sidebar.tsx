@@ -2,10 +2,22 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
-  LayoutDashboard, Users, MessageSquare, Zap, BarChart3,
-  Settings, Share2, ShoppingBag, Bot, Sparkles, HelpCircle,
-  Shield, ChevronRight, Crown
-, Star } from 'lucide-react'
+  LayoutDashboard,
+  Users,
+  MessageSquare,
+  Zap,
+  BarChart3,
+  Settings,
+  Share2,
+  ShoppingBag,
+  Bot,
+  Sparkles,
+  HelpCircle,
+  Shield,
+  ChevronRight,
+  Crown,
+  Star
+} from 'lucide-react'
 
 const NAV = [
   { group: 'Main', items: [
