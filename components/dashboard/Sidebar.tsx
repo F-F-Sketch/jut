@@ -22,6 +22,7 @@ const NAV = [
     { href: 'sales', label: 'Sales', icon: ShoppingBag },
     { href: 'analytics', label: 'Analytics', icon: BarChart3 },
     { href: 'creative', label: 'Creative AI', icon: Sparkles },
+    { href: 'pricing', label: 'Pricing', icon: Star },
   ]},
   { group: 'Account', items: [
     { href: 'settings', label: 'Settings', icon: Settings },
