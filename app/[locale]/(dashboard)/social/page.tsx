@@ -1,14 +1,16 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { ExternalLink, CheckCircle2, AlertCircle, Plus, Zap } from 'lucide-react'
+import { ExternalLink, CheckCircle2, AlertCircle, Zap, RefreshCw, Unplug, Settings } from 'lucide-react'
+import { IconInstagram, IconWhatsApp, IconFacebook, IconTikTok, IconPinterest, IconYouTube, IconTwitterX, IconTelegram } from '@/components/ui/Icons'
 import toast from 'react-hot-toast'
+import { useSearchParams } from 'next/navigation'
 
 const NETWORKS = [
   {
     id: 'instagram', name: 'Instagram', color: '#E1306C',
     gradient: 'linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045)',
-    icon: '📸', status: 'available',
+    icon: 'ð¸', status: 'available',
     triggers: ['Comment with keyword','DM received','Story reply','Reel engagement'],
     desc: 'Most powerful channel for DM automation and lead capture',
     docs: 'https://developers.facebook.com/docs/instagram-api',
@@ -16,7 +18,7 @@ const NETWORKS = [
   {
     id: 'whatsapp', name: 'WhatsApp Business', color: '#25D366',
     gradient: 'linear-gradient(135deg,#25D366,#128C7E)',
-    icon: '💬', status: 'available',
+    icon: 'ð¬', status: 'available',
     triggers: ['Message received','Keyword trigger','Contact joined'],
     desc: 'Automate WhatsApp Business conversations with the Cloud API',
     docs: 'https://developers.facebook.com/docs/whatsapp',
@@ -24,7 +26,7 @@ const NETWORKS = [
   {
     id: 'facebook', name: 'Facebook', color: '#1877F2',
     gradient: 'linear-gradient(135deg,#1877F2,#0d5dbf)',
-    icon: '👤', status: 'coming_soon',
+    icon: 'ð¤', status: 'coming_soon',
     triggers: ['Post comment','Page DM','Ad lead form'],
     desc: 'Facebook Page comments and Messenger automation',
     docs: 'https://developers.facebook.com',
@@ -32,7 +34,7 @@ const NETWORKS = [
   {
     id: 'tiktok', name: 'TikTok', color: '#010101',
     gradient: 'linear-gradient(135deg,#010101,#69C9D0,#EE1D52)',
-    icon: '🎵', status: 'coming_soon',
+    icon: 'ðµ', status: 'coming_soon',
     triggers: ['Video comment','Profile DM','Mention'],
     desc: 'TikTok comment automation and DM flows (TikTok for Business API)',
     docs: 'https://developers.tiktok.com',
@@ -40,7 +42,7 @@ const NETWORKS = [
   {
     id: 'pinterest', name: 'Pinterest', color: '#E60023',
     gradient: 'linear-gradient(135deg,#E60023,#ad081b)',
-    icon: '📌', status: 'coming_soon',
+    icon: 'ð', status: 'coming_soon',
     triggers: ['Pin save','Board follow','Comment'],
     desc: 'Pinterest audience automation and lead capture',
     docs: 'https://developers.pinterest.com',
@@ -48,7 +50,7 @@ const NETWORKS = [
   {
     id: 'youtube', name: 'YouTube', color: '#FF0000',
     gradient: 'linear-gradient(135deg,#FF0000,#cc0000)',
-    icon: '▶️', status: 'coming_soon',
+    icon: 'â¶ï¸', status: 'coming_soon',
     triggers: ['Comment trigger','Subscriber joined','Video mention'],
     desc: 'YouTube comment responses and subscriber automation',
     docs: 'https://developers.google.com/youtube',
@@ -56,7 +58,7 @@ const NETWORKS = [
   {
     id: 'twitter', name: 'X (Twitter)', color: '#000000',
     gradient: 'linear-gradient(135deg,#000,#333)',
-    icon: '𝕏', status: 'coming_soon',
+    icon: 'ð', status: 'coming_soon',
     triggers: ['Mention','DM received','Keyword in tweet'],
     desc: 'Twitter/X mentions and DM automation',
     docs: 'https://developer.twitter.com',
@@ -64,7 +66,7 @@ const NETWORKS = [
   {
     id: 'telegram', name: 'Telegram', color: '#0088cc',
     gradient: 'linear-gradient(135deg,#0088cc,#005fa3)',
-    icon: '✈️', status: 'coming_soon',
+    icon: 'âï¸', status: 'coming_soon',
     triggers: ['Bot message','Group keyword','Channel post'],
     desc: 'Telegram bot automation and group management',
     docs: 'https://core.telegram.org/bots/api',
@@ -102,17 +104,17 @@ export default function SocialPage() {
 
   function handleConnect(network: typeof NETWORKS[0]) {
     if (network.status === 'coming_soon') {
-      toast('Coming soon! We are working on ' + network.name + ' integration. Join the waitlist to get notified.', { duration: 4000, icon: '🔔' })
+      toast('Coming soon! We are working on ' + network.name + ' integration. Join the waitlist to get notified.', { duration: 4000, icon: 'ð' })
       return
     }
-    toast('To connect ' + network.name + ': Follow the setup instructions below and add your API credentials in Settings → Integrations.', { duration: 5000, icon: 'ℹ️' })
+    toast('To connect ' + network.name + ': Follow the setup instructions below and add your API credentials in Settings â Integrations.', { duration: 5000, icon: 'â¹ï¸' })
   }
 
   return (
     <div style={{padding:32,maxWidth:1100}}>
       <div style={{marginBottom:28}}>
         <h1 style={{fontSize:26,fontWeight:800,color:'var(--text)',letterSpacing:-0.5}}>Social Networks</h1>
-        <p style={{fontSize:14,color:'var(--text-3)',marginTop:4}}>Connect social channels · {integrations.filter(i=>i.status==='active').length} connected · {NETWORKS.filter(n=>n.status==='available').length} available · {NETWORKS.filter(n=>n.status==='coming_soon').length} coming soon</p>
+        <p style={{fontSize:14,color:'var(--text-3)',marginTop:4}}>Connect social channels Â· {integrations.filter(i=>i.status==='active').length} connected Â· {NETWORKS.filter(n=>n.status==='available').length} available Â· {NETWORKS.filter(n=>n.status==='coming_soon').length} coming soon</p>
       </div>
 
       <div style={{display:'grid',gap:16}}>
@@ -124,7 +126,7 @@ export default function SocialPage() {
             <div key={network.id} style={{borderRadius:16,background:'var(--surface)',border:'1px solid '+(connected?'rgba(34,197,94,0.3)':'var(--border-2)'),overflow:'hidden',transition:'border-color 0.2s'}}>
               <div style={{padding:20,display:'flex',alignItems:'center',gap:16,cursor:'pointer'}} onClick={()=>setExpanded(isExpanded?null:network.id)}>
                 <div style={{width:52,height:52,borderRadius:14,background:network.gradient,display:'flex',alignItems:'center',justifyContent:'center',fontSize:22,flexShrink:0}}>
-                  {network.icon}
+                  {network.IconComponent && <network.IconComponent size={24} color={network.iconColor || '#fff'}/>}
                 </div>
                 <div style={{flex:1}}>
                   <div style={{display:'flex',alignItems:'center',gap:10}}>
@@ -144,7 +146,7 @@ export default function SocialPage() {
                 <div style={{display:'flex',gap:8,alignItems:'center',flexShrink:0}}>
                   <button onClick={e=>{e.stopPropagation();handleConnect(network)}}
                     style={{padding:'8px 16px',borderRadius:10,background:connected?'rgba(34,197,94,0.1)':network.status==='coming_soon'?'var(--surface-2)':'var(--pink)',border:connected?'1px solid rgba(34,197,94,0.3)':'none',color:connected?'#22c55e':network.status==='coming_soon'?'var(--text-3)':'#fff',fontWeight:700,fontSize:13,cursor:'pointer'}}>
-                    {connected ? '✓ Connected' : network.status === 'coming_soon' ? 'Notify Me' : 'Connect'}
+                    {connected ? 'â Connected' : network.status === 'coming_soon' ? 'Notify Me' : 'Connect'}
                   </button>
                   <a href={network.docs} target="_blank" rel="noopener noreferrer" onClick={e=>e.stopPropagation()} style={{padding:'8px 10px',borderRadius:10,background:'var(--surface-2)',border:'1px solid var(--border-2)',color:'var(--text-3)',display:'flex',alignItems:'center',textDecoration:'none'}}>
                     <ExternalLink size={14}/>
@@ -175,7 +177,7 @@ export default function SocialPage() {
                         </div>
                       ) : (
                         <div style={{display:'flex',flexDirection:'column',gap:8}}>
-                          {['Create a developer account','Create an App and enable the required API','Request necessary permissions','Get your API credentials','Add token in Settings → Integrations'].map((step,i) => (
+                          {['Create a developer account','Create an App and enable the required API','Request necessary permissions','Get your API credentials','Add token in Settings â Integrations'].map((step,i) => (
                             <div key={i} style={{display:'flex',gap:10,alignItems:'flex-start'}}>
                               <div style={{width:22,height:22,borderRadius:999,background:'var(--pink)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:11,fontWeight:700,color:'#fff',flexShrink:0,marginTop:1}}>{i+1}</div>
                               <span style={{fontSize:13,color:'var(--text-2)',lineHeight:1.5}}>{step}</span>
