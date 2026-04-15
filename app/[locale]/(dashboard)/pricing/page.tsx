@@ -1,179 +1,152 @@
 'use client'
 import { useState } from 'react'
-import { Check, Zap, Crown, Star, ArrowRight, X } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
+import toast from 'react-hot-toast'
 
 const PLANS = [
   {
-    id: 'free',
-    name: 'Free',
-    price_cop: 0,
-    price_usd: 0,
-    color: '#6b7280',
-    icon: Zap,
-    desc: 'Perfect to get started and explore JUT',
-    highlight: false,
-    features: [
-      { text: '1 active automation', included: true },
-      { text: '100 conversations/month', included: true },
-      { text: '1 social account', included: true },
-      { text: 'Basic AI Agent', included: true },
-      { text: 'Creative Analyzer (3/month)', included: true },
-      { text: 'Analytics dashboard', included: true },
-      { text: 'Heatmap & Focus Map', included: false },
-      { text: 'Improvement Plan', included: false },
-      { text: 'Creative Variants', included: false },
-      { text: 'WhatsApp Business', included: false },
-      { text: 'Priority support', included: false },
-      { text: 'White-label', included: false },
+    id:'free', name:'Free', cop:0, usd:0,
+    color:'#6b7280', badge:null, highlight:false,
+    desc:'Perfect to get started',
+    features:[
+      {t:'1 active automation',ok:true},{t:'100 conversations/month',ok:true},
+      {t:'1 social account',ok:true},{t:'Basic AI Agent',ok:true},
+      {t:'Creative Analyzer (3/month)',ok:true},{t:'Analytics dashboard',ok:true},
+      {t:'Heatmap & Focus Map',ok:false},{t:'Improvement Plan',ok:false},
+      {t:'Creative Variants',ok:false},{t:'WhatsApp Business',ok:false},
+      {t:'Priority support',ok:false},{t:'White-label',ok:false},
     ],
-    cta: 'Get Started Free',
-    ctaStyle: 'ghost',
   },
   {
-    id: 'growth',
-    name: 'Growth',
-    price_cop: 320000,
-    price_usd: 79,
-    color: '#ED1966',
-    icon: Star,
-    desc: 'For businesses ready to automate and scale',
-    highlight: true,
-    badge: 'Most Popular',
-    features: [
-      { text: '20 active automations', included: true },
-      { text: '5,000 conversations/month', included: true },
-      { text: '3 social accounts', included: true },
-      { text: 'Advanced AI Agent', included: true },
-      { text: 'Creative Analyzer (unlimited)', included: true },
-      { text: 'Analytics + exports', included: true },
-      { text: 'Heatmap & Focus Map', included: true },
-      { text: 'Improvement Plan', included: true },
-      { text: 'Creative Variants (10/month)', included: true },
-      { text: 'WhatsApp Business', included: true },
-      { text: 'Priority support', included: false },
-      { text: 'White-label', included: false },
+    id:'growth', name:'Growth', cop:320000, usd:79,
+    color:'#ED1966', badge:'Most Popular', highlight:true,
+    desc:'For businesses ready to scale with AI automation',
+    features:[
+      {t:'20 active automations',ok:true},{t:'5,000 conversations/month',ok:true},
+      {t:'3 social accounts',ok:true},{t:'Advanced AI Agent',ok:true},
+      {t:'Creative Analyzer (unlimited)',ok:true},{t:'Analytics + exports',ok:true},
+      {t:'Heatmap & Focus Map',ok:true},{t:'Improvement Plan',ok:true},
+      {t:'Creative Variants (10/month)',ok:true},{t:'WhatsApp Business',ok:true},
+      {t:'Priority support',ok:false},{t:'White-label',ok:false},
     ],
-    cta: 'Get Growth',
-    ctaStyle: 'primary',
   },
   {
-    id: 'elite',
-    name: 'Elite',
-    price_cop: 800000,
-    price_usd: 199,
-    color: '#C9A84C',
-    icon: Crown,
-    desc: 'Unlimited power for agencies and serious businesses',
-    highlight: false,
-    features: [
-      { text: 'Unlimited automations', included: true },
-      { text: 'Unlimited conversations', included: true },
-      { text: 'Unlimited social accounts', included: true },
-      { text: 'Custom AI Agent persona', included: true },
-      { text: 'Creative Analyzer (unlimited)', included: true },
-      { text: 'Advanced analytics + API', included: true },
-      { text: 'Heatmap & Focus Map', included: true },
-      { text: 'Improvement Plan', included: true },
-      { text: 'Creative Variants (unlimited)', included: true },
-      { text: 'WhatsApp Business', included: true },
-      { text: 'Priority support 24/7', included: true },
-      { text: 'White-label platform', included: true },
+    id:'elite', name:'Elite', cop:800000, usd:199,
+    color:'#C9A84C', badge:'Best Value', highlight:false,
+    desc:'Unlimited power for agencies and serious businesses',
+    features:[
+      {t:'Unlimited automations',ok:true},{t:'Unlimited conversations',ok:true},
+      {t:'Unlimited social accounts',ok:true},{t:'Custom AI Agent persona',ok:true},
+      {t:'Creative Analyzer (unlimited)',ok:true},{t:'Advanced analytics + API',ok:true},
+      {t:'Heatmap & Focus Map',ok:true},{t:'Improvement Plan',ok:true},
+      {t:'Creative Variants (unlimited)',ok:true},{t:'WhatsApp Business',ok:true},
+      {t:'Priority support 24/7',ok:true},{t:'White-label platform',ok:true},
     ],
-    cta: 'Get Elite',
-    ctaStyle: 'gold',
   },
 ]
 
-export default function PricingPage() {
+export default function PricingPage({ params }:{ params:{ locale:string } }) {
   const [currency, setCurrency] = useState<'cop'|'usd'>('cop')
+  const [loading, setLoading] = useState<string|null>(null)
+  const router = useRouter()
+  const supabase = createClient()
 
-  function formatPrice(plan: typeof PLANS[0]) {
-    if (plan.price_cop === 0) return 'Free'
-    if (currency === 'cop') return '$' + plan.price_cop.toLocaleString('es-CO') + ' COP'
-    return '$' + plan.price_usd + ' USD'
+  async function checkout(planId:string, method:'wompi'|'stripe') {
+    if (planId === 'free') { toast.success("You're already on the Free plan!"); return }
+    setLoading(planId+method)
+    try {
+      const { data:{ user } } = await supabase.auth.getUser()
+      if (!user) { router.push('/'+params.locale+'/login'); return }
+      const res = await fetch('/api/checkout/create', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({ plan:planId, method, currency }),
+      })
+      const data = await res.json()
+      if (!res.ok) { toast.error(data.error||'Checkout failed'); return }
+      if (data.url) window.location.href = data.url
+    } catch(e:any) { toast.error(e.message) } finally { setLoading(null) }
+  }
+
+  function price(p:typeof PLANS[0]) {
+    if (p.cop===0) return 'Free'
+    if (currency==='cop') return '$'+p.cop.toLocaleString('es-CO')+' COP'
+    return '$'+p.usd+' USD'
   }
 
   return (
-    <div style={{ padding: '32px 32px 60px', maxWidth: 1100 }}>
+    <div style={{padding:'clamp(16px,3vw,40px)',maxWidth:1100}}>
       {/* Header */}
-      <div style={{ textAlign: 'center', marginBottom: 40 }}>
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 14px', borderRadius: 999, background: 'rgba(237,25,102,0.08)', border: '1px solid rgba(237,25,102,0.2)', marginBottom: 16 }}>
-          <Zap size={13} color="var(--pink)"/>
-          <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--pink)', letterSpacing: 0.5 }}>PRICING</span>
+      <div style={{textAlign:'center',marginBottom:40}}>
+        <div style={{display:'inline-flex',alignItems:'center',gap:6,padding:'4px 14px',borderRadius:999,background:'rgba(237,25,102,0.08)',border:'1px solid rgba(237,25,102,0.2)',marginBottom:14}}>
+          <span style={{fontSize:11,fontWeight:700,color:'var(--pink)',letterSpacing:0.5}}>⚡ PRICING</span>
         </div>
-        <h1 style={{ fontSize: 'clamp(28px,4vw,44px)', fontWeight: 900, letterSpacing: -1, marginBottom: 14, lineHeight: 1.1 }}>
-          Simple, transparent pricing
-        </h1>
-        <p style={{ fontSize: 16, color: 'var(--text-3)', maxWidth: 500, margin: '0 auto 24px' }}>
-          Start free. Upgrade when you are ready to scale your business with AI automation.
-        </p>
-        {/* Currency toggle */}
-        <div style={{ display: 'inline-flex', background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 12, padding: 4 }}>
-          {(['cop', 'usd'] as const).map(c => (
-            <button key={c} onClick={() => setCurrency(c)} style={{ padding: '7px 20px', borderRadius: 9, border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: 13, background: currency === c ? 'var(--pink)' : 'transparent', color: currency === c ? '#fff' : 'var(--text-3)', transition: 'all 0.15s' }}>
-              {c === 'cop' ? '🇨🇴 COP' : '🌎 USD'}
+        <h1 style={{fontSize:'clamp(24px,4vw,44px)',fontWeight:900,letterSpacing:-1.5,marginBottom:12,lineHeight:1.05}}>Simple, transparent pricing</h1>
+        <p style={{fontSize:'clamp(14px,1.5vw,16px)',color:'var(--text-3)',maxWidth:460,margin:'0 auto 20px',lineHeight:1.6}}>Start free. Scale when ready. No hidden fees.</p>
+        <div style={{display:'inline-flex',background:'var(--surface)',border:'1px solid var(--border-2)',borderRadius:12,padding:4}}>
+          {(['cop','usd'] as const).map(c=>(
+            <button key={c} onClick={()=>setCurrency(c)} style={{padding:'7px 18px',borderRadius:9,border:'none',cursor:'pointer',fontWeight:700,fontSize:13,background:currency===c?'var(--pink)':'transparent',color:currency===c?'#fff':'var(--text-3)',transition:'all 0.15s'}}>
+              {c==='cop'?'🇨🇴 COP':'🌎 USD'}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Plans grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 20, marginBottom: 40 }}>
-        {PLANS.map(plan => (
+      {/* Plans */}
+      <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(280px,1fr))',gap:18,marginBottom:40}}>
+        {PLANS.map(plan=>(
           <div key={plan.id} style={{
-            padding: 28, borderRadius: 24,
-            background: plan.highlight ? 'linear-gradient(135deg,rgba(237,25,102,0.08),rgba(33,82,164,0.06))' : 'var(--surface)',
-            border: '2px solid ' + (plan.highlight ? 'rgba(237,25,102,0.35)' : 'var(--border-2)'),
-            position: 'relative', overflow: 'hidden',
-            transform: plan.highlight ? 'scale(1.03)' : 'scale(1)',
-            boxShadow: plan.highlight ? '0 20px 60px rgba(237,25,102,0.15)' : 'none',
+            padding:'clamp(18px,2vw,28px)',borderRadius:24,position:'relative',overflow:'hidden',
+            background:plan.highlight?'linear-gradient(135deg,rgba(237,25,102,0.07),rgba(33,82,164,0.05))':'var(--surface)',
+            border:'2px solid '+(plan.highlight?'rgba(237,25,102,0.4)':'var(--border-2)'),
+            boxShadow:plan.highlight?'0 20px 60px rgba(237,25,102,0.12)':'none',
           }}>
-            {plan.badge && (
-              <div style={{ position: 'absolute', top: 16, right: 16, padding: '4px 12px', borderRadius: 999, background: 'var(--pink)', color: '#fff', fontSize: 11, fontWeight: 700, letterSpacing: 0.3 }}>
+            {plan.highlight&&<div style={{position:'absolute',top:-40,right:-40,width:130,height:130,borderRadius:'50%',background:'rgba(237,25,102,0.06)',filter:'blur(24px)',pointerEvents:'none'}}/>}
+            {plan.badge&&(
+              <div style={{position:'absolute',top:16,right:16,padding:'3px 10px',borderRadius:999,background:plan.id==='elite'?'linear-gradient(135deg,#C9A84C,#E8C97A)':'var(--pink)',color:plan.id==='elite'?'#0a0a0a':'#fff',fontSize:10,fontWeight:700}}>
                 {plan.badge}
               </div>
             )}
-            {plan.highlight && <div style={{ position: 'absolute', top: -30, right: -30, width: 120, height: 120, borderRadius: '50%', background: 'rgba(237,25,102,0.08)', filter: 'blur(24px)' }}/>}
-
-            <div style={{ marginBottom: 20 }}>
-              <div style={{ width: 44, height: 44, borderRadius: 13, background: plan.color + '18', border: '1px solid ' + plan.color + '30', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 14 }}>
-                <plan.icon size={20} color={plan.color}/>
-              </div>
-              <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--text)', marginBottom: 4 }}>{plan.name}</div>
-              <div style={{ fontSize: 13, color: 'var(--text-3)', lineHeight: 1.5 }}>{plan.desc}</div>
+            <div style={{marginBottom:16,paddingRight:plan.badge?70:0}}>
+              <div style={{fontSize:10,fontWeight:700,color:plan.color,textTransform:'uppercase',letterSpacing:0.8,marginBottom:5}}>{plan.name}</div>
+              <div style={{fontSize:12,color:'var(--text-3)',lineHeight:1.5}}>{plan.desc}</div>
+            </div>
+            <div style={{marginBottom:20}}>
+              <span style={{fontSize:plan.cop===0?40:34,fontWeight:900,color:plan.highlight?'var(--pink)':'var(--text)',letterSpacing:-1.5,lineHeight:1,fontFamily:'var(--font-display)'}}>{price(plan)}</span>
+              {plan.cop>0&&<div style={{fontSize:12,color:'var(--text-4)',marginTop:3}}>per month · cancel anytime</div>}
             </div>
 
-            <div style={{ marginBottom: 24 }}>
-              <div style={{ fontSize: plan.price_cop === 0 ? 44 : 38, fontWeight: 900, color: plan.highlight ? 'var(--pink)' : 'var(--text)', letterSpacing: -1.5, lineHeight: 1, fontFamily: 'var(--font-display)' }}>
-                {formatPrice(plan)}
+            {/* Payment buttons */}
+            {plan.id==='free' ? (
+              <button style={{width:'100%',padding:'12px',borderRadius:12,border:'1px solid var(--border-2)',background:'var(--surface-2)',color:'var(--text-2)',fontSize:14,fontWeight:700,cursor:'pointer',marginBottom:20}}>
+                Current Plan
+              </button>
+            ) : (
+              <div style={{display:'flex',flexDirection:'column',gap:8,marginBottom:20}}>
+                <button
+                  onClick={()=>checkout(plan.id,'wompi')}
+                  disabled={loading===plan.id+'wompi'}
+                  style={{width:'100%',padding:'11px',borderRadius:11,border:'none',background:plan.highlight?'var(--pink)':'var(--surface-2)',color:plan.highlight?'#fff':'var(--text)',fontSize:13,fontWeight:700,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:7,border:plan.highlight?'none':'1px solid var(--border-2)',transition:'all 0.2s',opacity:loading===plan.id+'wompi'?0.7:1}}>
+                  {loading===plan.id+'wompi'?'Redirecting...':<>🇨🇴 Pay with Wompi (COP)</>}
+                </button>
+                <button
+                  onClick={()=>checkout(plan.id,'stripe')}
+                  disabled={loading===plan.id+'stripe'}
+                  style={{width:'100%',padding:'11px',borderRadius:11,border:'1px solid var(--border-2)',background:'var(--surface-2)',color:'var(--text-2)',fontSize:13,fontWeight:600,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:7,transition:'all 0.2s',opacity:loading===plan.id+'stripe'?0.7:1}}>
+                  {loading===plan.id+'stripe'?'Redirecting...':<>🌎 Pay with Stripe (USD)</>}
+                </button>
               </div>
-              {plan.price_cop > 0 && <div style={{ fontSize: 13, color: 'var(--text-4)', marginTop: 4 }}>per month · cancel anytime</div>}
-            </div>
+            )}
 
-            <button style={{
-              width: '100%', padding: '13px', borderRadius: 13, border: 'none',
-              fontSize: 15, fontWeight: 700, cursor: 'pointer',
-              marginBottom: 24, transition: 'all 0.2s',
-              background: plan.ctaStyle === 'primary' ? 'var(--pink)'
-                : plan.ctaStyle === 'gold' ? 'linear-gradient(135deg,var(--gold),var(--gold-light),var(--gold))'
-                : 'var(--surface-2)',
-              color: plan.ctaStyle === 'ghost' ? 'var(--text-2)' : plan.ctaStyle === 'gold' ? '#0a0a0a' : '#fff',
-              boxShadow: plan.ctaStyle === 'primary' ? '0 6px 24px rgba(237,25,102,0.35)' : 'none',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
-            }}>
-              {plan.cta} {plan.ctaStyle !== 'ghost' && <ArrowRight size={15}/>}
-            </button>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
-              {plan.features.map((f, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <div style={{ width: 18, height: 18, borderRadius: '50%', background: f.included ? (plan.highlight ? 'rgba(237,25,102,0.15)' : 'rgba(34,197,94,0.12)') : 'var(--surface-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    {f.included
-                      ? <Check size={11} color={plan.highlight ? 'var(--pink)' : '#22c55e'} strokeWidth={3}/>
-                      : <X size={10} color="var(--text-4)" strokeWidth={2.5}/>
-                    }
+            <div style={{height:1,background:'var(--border)',marginBottom:16}}/>
+            <div style={{display:'flex',flexDirection:'column',gap:8}}>
+              {plan.features.map((f,i)=>(
+                <div key={i} style={{display:'flex',alignItems:'center',gap:9}}>
+                  <div style={{width:17,height:17,borderRadius:'50%',background:f.ok?(plan.highlight?'rgba(237,25,102,0.15)':'rgba(34,197,94,0.12)'):'var(--surface-2)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                    <span style={{color:f.ok?(plan.highlight?'var(--pink)':'#22c55e'):'var(--text-4)',fontSize:10,fontWeight:900,lineHeight:1}}>{f.ok?'✓':'✕'}</span>
                   </div>
-                  <span style={{ fontSize: 13, color: f.included ? 'var(--text-2)' : 'var(--text-4)', fontWeight: f.included ? 500 : 400 }}>{f.text}</span>
+                  <span style={{fontSize:12,color:f.ok?'var(--text-2)':'var(--text-4)'}}>{f.t}</span>
                 </div>
               ))}
             </div>
@@ -181,21 +154,11 @@ export default function PricingPage() {
         ))}
       </div>
 
-      {/* FAQ */}
-      <div style={{ padding: 28, borderRadius: 20, background: 'var(--surface)', border: '1px solid var(--border-2)' }}>
-        <h2 style={{ fontSize: 20, fontWeight: 800, marginBottom: 20, textAlign: 'center' }}>Frequently asked questions</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-          {[
-            { q: 'Can I change plans anytime?', a: 'Yes. Upgrade or downgrade at any time. Changes take effect immediately.' },
-            { q: 'What payment methods are accepted?', a: 'In Colombia: PSE, Nequi, Bancolombia, credit/debit cards via Wompi. International: all major credit cards via Stripe.' },
-            { q: 'Is there a free trial?', a: 'The Free plan has no time limit. You can use it as long as you want before upgrading.' },
-            { q: 'What happens if I exceed my limits?', a: 'We will notify you before you hit limits. Automations will pause until the next billing cycle or you upgrade.' },
-          ].map((item, i) => (
-            <div key={i} style={{ padding: 18, borderRadius: 14, background: 'var(--surface-2)', border: '1px solid var(--border-2)' }}>
-              <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)', marginBottom: 7 }}>{item.q}</div>
-              <div style={{ fontSize: 13, color: 'var(--text-3)', lineHeight: 1.6 }}>{item.a}</div>
-            </div>
-          ))}
+      <div style={{padding:18,borderRadius:14,background:'rgba(237,25,102,0.04)',border:'1px solid rgba(237,25,102,0.12)',display:'flex',alignItems:'center',gap:12,flexWrap:'wrap'}}>
+        <div style={{fontSize:22}}>🇨🇴</div>
+        <div>
+          <div style={{fontSize:14,fontWeight:700,color:'var(--text)',marginBottom:2}}>Colombian payment methods available</div>
+          <div style={{fontSize:12,color:'var(--text-3)'}}>PSE · Nequi · Bancolombia QR · Credit/debit cards — all via Wompi</div>
         </div>
       </div>
     </div>
