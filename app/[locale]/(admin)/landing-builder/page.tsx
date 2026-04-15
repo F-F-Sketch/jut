@@ -1,152 +1,291 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Save, Eye, Plus, Trash2, GripVertical, ChevronUp, ChevronDown } from 'lucide-react'
+import { Save, Eye, EyeOff, RefreshCw, Check, Monitor, Smartphone, Tablet, Undo, Redo, Settings2, Type, Palette, Layout } from 'lucide-react'
 import toast from 'react-hot-toast'
 
-type BlockType = 'hero'|'features'|'stats'|'cta'|'text'|'image'|'testimonials'|'pricing'|'faq'
-
-const BLOCK_LABELS: Record<BlockType,string> = {
-  hero:'🚀 Hero Section', features:'✨ Features Grid', stats:'📊 Stats Bar',
-  cta:'📣 CTA Banner', text:'📝 Text Block', image:'🖼️ Image',
-  testimonials:'💬 Testimonials', pricing:'💰 Pricing Table', faq:'❓ FAQ',
+const DEFAULT_CONFIG = {
+  hero: { headline:'Automate Every Conversation.', subheadline:'JUT connects to Instagram, WhatsApp and more — capturing leads and closing deals while you sleep.', cta_primary:'Get Started Free', cta_secondary:'See how it works', bg_color:'#050508' },
+  features: { title:'Everything you need to automate', items:[{icon:'🤖',title:'AI Agent',desc:'24/7 automated responses'},{icon:'⚡',title:'Automations',desc:'Set triggers, fire flows instantly'},{icon:'📊',title:'Analytics',desc:'Real-time insights'},{icon:'🎨',title:'Creative AI',desc:'Score and improve creatives'}] },
+  stats: { items:[{value:'<3s',label:'Response time'},{value:'24/7',label:'Always on'},{value:'2×',label:'Conversion uplift'},{value:'∞',label:'Conversations'}] },
+  cta: { title:'Ready to automate?', subtitle:'Start free. Scale fast.', button:"Get Started — It's Free" },
+  colors: { primary:'#ED1966', text:'#f0f0fc', bg:'#050508' },
+  fonts: { headline:'Syne', body:'DM Sans' },
+  navbar: { logo:'JUT', links:['Features','Pricing'] },
 }
 
-const DEFAULTS: Record<BlockType,any> = {
-  hero: { title:'Automate Every Conversation', subtitle:'Your subtitle here', cta:'Get Started Free', cta2:'See how it works', bg:'#050508' },
-  features: { title:'Everything you need', items:[{icon:'🤖',title:'AI Agent',desc:'24/7 automated responses'},{icon:'⚡',title:'Automations',desc:'Set triggers, fire flows'},{icon:'📊',title:'Analytics',desc:'Real-time insights'}]},
-  stats: { title:'By the numbers', items:[{value:'<3s',label:'Response time'},{value:'24/7',label:'Always on'},{value:'2×',label:'Conversion uplift'}]},
-  cta: { title:'Ready to automate?', subtitle:'Start free. Scale fast.', cta:'Get Started' },
-  text: { title:'Section Title', body:'Write your content here...' },
-  image: { url:'', caption:'', alt:'' },
-  testimonials: { title:'What our customers say', items:[{name:'Maria R.',role:'E-commerce',text:'JUT doubled our conversions!',rating:5}]},
-  pricing: { title:'Simple pricing', plans:[{name:'Free',price:'$0',cta:'Start Free'},{name:'Growth',price:'$79',cta:'Get Growth',highlight:true},{name:'Elite',price:'$199',cta:'Get Elite'}]},
-  faq: { title:'FAQ', items:[{q:'How does JUT work?',a:'JUT connects to your social channels and automates conversations using AI.'}]},
-}
+type DeviceMode = 'desktop'|'tablet'|'mobile'
 
 export default function LandingBuilderPage() {
-  const [blocks, setBlocks] = useState<any[]>([
-    { id:'1', type:'hero', ...DEFAULTS.hero },
-    { id:'2', type:'features', ...DEFAULTS.features },
-    { id:'3', type:'stats', ...DEFAULTS.stats },
-    { id:'4', type:'cta', ...DEFAULTS.cta },
-  ])
-  const [selected, setSelected] = useState<string|null>('1')
+  const [config, setConfig] = useState<any>(DEFAULT_CONFIG)
   const [saving, setSaving] = useState(false)
+  const [saved, setSaved] = useState(false)
+  const [device, setDevice] = useState<DeviceMode>('desktop')
+  const [activeSection, setActiveSection] = useState<string|null>('hero')
+  const [history, setHistory] = useState<any[]>([DEFAULT_CONFIG])
+  const [historyIdx, setHistoryIdx] = useState(0)
+  const iframeRef = useRef<HTMLIFrameElement>(null)
   const supabase = createClient()
 
-  function addBlock(type: BlockType) {
-    const b = { id: Date.now().toString(), type, ...DEFAULTS[type] }
-    setBlocks(p => [...p, b]); setSelected(b.id)
+  useEffect(() => { loadConfig() }, [])
+
+  // Send config to iframe whenever it changes
+  useEffect(() => {
+    const iframe = iframeRef.current
+    if (!iframe?.contentWindow) return
+    const send = () => iframe.contentWindow?.postMessage({ type:'JUT_CONFIG_UPDATE', config }, '*')
+    // Small delay to ensure iframe is ready
+    const t = setTimeout(send, 100)
+    return () => clearTimeout(t)
+  }, [config])
+
+  async function loadConfig() {
+    try {
+      const res = await fetch('/api/landing')
+      const data = await res.json()
+      if (data.config) {
+        setConfig(data.config)
+        setHistory([data.config])
+      }
+    } catch(e) { console.error('Failed to load config:', e) }
   }
-  function removeBlock(id: string) { setBlocks(p => p.filter(x => x.id !== id)); if (selected===id) setSelected(null) }
-  function moveBlock(id: string, dir: 'up'|'down') {
-    setBlocks(p => {
-      const idx = p.findIndex(x => x.id === id)
-      if (dir==='up' && idx===0) return p; if (dir==='down' && idx===p.length-1) return p
-      const arr = [...p]; const sw = dir==='up'?idx-1:idx+1
-      ;[arr[idx],arr[sw]] = [arr[sw],arr[idx]]; return arr
-    })
+
+  function updateConfig(path: string[], value: any) {
+    const next = JSON.parse(JSON.stringify(config))
+    let obj = next
+    for (let i = 0; i < path.length - 1; i++) obj = obj[path[i]]
+    obj[path[path.length - 1]] = value
+    setConfig(next)
+    // Add to history
+    const newHistory = history.slice(0, historyIdx + 1)
+    newHistory.push(next)
+    setHistory(newHistory)
+    setHistoryIdx(newHistory.length - 1)
   }
-  function upd(id: string, u: any) { setBlocks(p => p.map(x => x.id===id ? {...x,...u} : x)) }
+
+  function undo() {
+    if (historyIdx > 0) { setHistoryIdx(historyIdx - 1); setConfig(history[historyIdx - 1]) }
+  }
+  function redo() {
+    if (historyIdx < history.length - 1) { setHistoryIdx(historyIdx + 1); setConfig(history[historyIdx + 1]) }
+  }
 
   async function save() {
     setSaving(true)
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
-    const { error } = await supabase.from('landing_config').upsert({ user_id: user.id, blocks, updated_at: new Date().toISOString() }, { onConflict: 'user_id' })
-    setSaving(false)
-    error ? toast.error('Save failed') : toast.success('Landing saved!')
+    try {
+      const res = await fetch('/api/landing', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ config }) })
+      if (!res.ok) { toast.error('Failed to save'); return }
+      setSaved(true); toast.success('Landing page saved and published!')
+      setTimeout(() => setSaved(false), 2500)
+    } catch(e:any) { toast.error(e.message) } finally { setSaving(false) }
   }
 
-  const sel = blocks.find(b => b.id === selected)
-  const inp: React.CSSProperties = { width:'100%', padding:'9px 12px', borderRadius:9, background:'var(--surface-2)', border:'1px solid var(--border-2)', color:'var(--text)', fontSize:13, outline:'none', marginTop:5 }
+  const deviceWidth = { desktop:'100%', tablet:'768px', mobile:'390px' }[device]
+
+  const inp: React.CSSProperties = { width:'100%', padding:'9px 12px', borderRadius:9, background:'var(--surface-2)', border:'1px solid var(--border-2)', color:'var(--text)', fontSize:13, outline:'none', marginTop:5, transition:'border-color 0.2s' }
+
+  const SECTIONS = [
+    { id:'hero', label:'Hero Section', icon:'🚀' },
+    { id:'stats', label:'Stats Bar', icon:'📊' },
+    { id:'features', label:'Features', icon:'✨' },
+    { id:'cta', label:'CTA Section', icon:'📣' },
+    { id:'colors', label:'Colors & Fonts', icon:'🎨' },
+    { id:'navbar', label:'Navigation', icon:'🔗' },
+  ]
 
   return (
-    <div style={{display:'flex',height:'calc(100vh - 68px)',overflow:'hidden'}}>
-      {/* Left: Add Blocks */}
-      <div style={{width:220,flexShrink:0,borderRight:'1px solid var(--border-2)',overflowY:'auto',background:'var(--surface)',padding:16}}>
-        <p style={{fontSize:12,fontWeight:700,color:'var(--text-3)',textTransform:'uppercase',letterSpacing:0.8,marginBottom:10}}>Add Block</p>
-        <div style={{display:'flex',flexDirection:'column',gap:4}}>
-          {(Object.keys(BLOCK_LABELS) as BlockType[]).map(type => (
-            <button key={type} onClick={()=>addBlock(type)}
-              style={{display:'flex',alignItems:'center',gap:7,padding:'8px 10px',borderRadius:9,background:'transparent',border:'1px solid var(--border-2)',color:'var(--text-2)',cursor:'pointer',fontSize:13,textAlign:'left'}}>
-              <Plus size={12}/> {BLOCK_LABELS[type]}
+    <div style={{ display:'flex', height:'calc(100vh - 60px)', overflow:'hidden', fontFamily:'var(--font-body)' }}>
+
+      {/* LEFT PANEL — Section picker + properties */}
+      <div style={{ width:280, flexShrink:0, background:'var(--bg-2)', borderRight:'1px solid var(--border-2)', display:'flex', flexDirection:'column', overflow:'hidden' }}>
+
+        {/* Header */}
+        <div style={{ padding:'14px 16px', borderBottom:'1px solid var(--border-2)', display:'flex', alignItems:'center', gap:8 }}>
+          <Layout size={16} color="var(--pink)"/>
+          <span style={{ fontSize:14, fontWeight:700, color:'var(--text)' }}>Page Editor</span>
+          <div style={{ marginLeft:'auto', display:'flex', gap:4 }}>
+            <button onClick={undo} disabled={historyIdx===0} title="Undo" style={{ padding:5, borderRadius:7, background:'var(--surface-2)', border:'1px solid var(--border-2)', color:historyIdx===0?'var(--text-4)':'var(--text-2)', cursor:historyIdx===0?'not-allowed':'pointer' }}>
+              <Undo size={13}/>
+            </button>
+            <button onClick={redo} disabled={historyIdx===history.length-1} title="Redo" style={{ padding:5, borderRadius:7, background:'var(--surface-2)', border:'1px solid var(--border-2)', color:historyIdx===history.length-1?'var(--text-4)':'var(--text-2)', cursor:historyIdx===history.length-1?'not-allowed':'pointer' }}>
+              <Redo size={13}/>
+            </button>
+          </div>
+        </div>
+
+        {/* Section list */}
+        <div style={{ padding:10, borderBottom:'1px solid var(--border-2)' }}>
+          <p style={{ fontSize:10, fontWeight:700, color:'var(--text-4)', textTransform:'uppercase', letterSpacing:0.7, marginBottom:7, paddingLeft:4 }}>Sections</p>
+          {SECTIONS.map(s => (
+            <button key={s.id} onClick={() => setActiveSection(s.id)} style={{ width:'100%', display:'flex', alignItems:'center', gap:9, padding:'9px 10px', borderRadius:10, border:'none', cursor:'pointer', background:activeSection===s.id?'rgba(237,25,102,0.1)':'transparent', color:activeSection===s.id?'var(--text)':'var(--text-3)', fontSize:13, fontWeight:activeSection===s.id?600:400, textAlign:'left', marginBottom:2, borderLeft:activeSection===s.id?'2px solid var(--pink)':'2px solid transparent' }}>
+              <span style={{ fontSize:16 }}>{s.icon}</span>{s.label}
             </button>
           ))}
         </div>
-        <p style={{fontSize:12,fontWeight:700,color:'var(--text-3)',textTransform:'uppercase',letterSpacing:0.8,margin:'20px 0 10px'}}>Structure</p>
-        <div style={{display:'flex',flexDirection:'column',gap:5}}>
-          {blocks.map((b) => (
-            <div key={b.id} onClick={()=>setSelected(b.id)}
-              style={{padding:'8px 10px',borderRadius:9,background:selected===b.id?'rgba(237,25,102,0.1)':'var(--surface-2)',border:'1px solid '+(selected===b.id?'rgba(237,25,102,0.3)':'var(--border-2)'),cursor:'pointer',display:'flex',alignItems:'center',gap:6}}>
-              <GripVertical size={11} color='var(--text-3)'/>
-              <span style={{flex:1,fontSize:12,color:'var(--text)',fontWeight:selected===b.id?700:400}}>{BLOCK_LABELS[b.type as BlockType]||b.type}</span>
-              <button onClick={e=>{e.stopPropagation();moveBlock(b.id,'up')}} style={{background:'none',border:'none',cursor:'pointer',color:'var(--text-3)',padding:1}}><ChevronUp size={11}/></button>
-              <button onClick={e=>{e.stopPropagation();moveBlock(b.id,'down')}} style={{background:'none',border:'none',cursor:'pointer',color:'var(--text-3)',padding:1}}><ChevronDown size={11}/></button>
-              <button onClick={e=>{e.stopPropagation();removeBlock(b.id)}} style={{background:'none',border:'none',cursor:'pointer',color:'#ef4444',padding:1}}><Trash2 size={11}/></button>
-            </div>
-          ))}
-        </div>
-      </div>
 
-      {/* Center: Canvas */}
-      <div style={{flex:1,overflowY:'auto',background:'#020207',padding:24}}>
-        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
-          <span style={{fontSize:13,fontWeight:700,color:'rgba(255,255,255,0.3)'}}>Landing Page Canvas</span>
-          <button onClick={save} disabled={saving} style={{display:'flex',alignItems:'center',gap:6,padding:'8px 16px',borderRadius:10,background:'var(--pink)',border:'none',color:'#fff',cursor:'pointer',fontSize:13,fontWeight:700}}>
-            <Save size={13}/> {saving ? 'Saving...' : 'Save'}
-          </button>
-        </div>
-        <div style={{display:'flex',flexDirection:'column',gap:8,maxWidth:820,margin:'0 auto'}}>
-          {blocks.map(b => (
-            <div key={b.id} onClick={()=>setSelected(b.id)}
-              style={{padding:16,borderRadius:12,border:'2px solid '+(selected===b.id?'#ED1966':'rgba(255,255,255,0.05)'),cursor:'pointer',background:'rgba(255,255,255,0.02)'}}>
-              <div style={{fontSize:10,fontWeight:700,color:selected===b.id?'#ED1966':'rgba(255,255,255,0.2)',textTransform:'uppercase',letterSpacing:1,marginBottom:8}}>{b.type}</div>
-              {b.type==='hero' && <div style={{textAlign:'center',padding:'16px 0'}}><h2 style={{fontSize:24,fontWeight:900,color:'#fff',marginBottom:6}}>{b.title}</h2><p style={{color:'rgba(255,255,255,0.4)',fontSize:13}}>{b.subtitle}</p></div>}
-              {b.type==='text' && <div><h3 style={{color:'#fff',marginBottom:4,fontSize:16}}>{b.title}</h3><p style={{color:'rgba(255,255,255,0.4)',fontSize:12}}>{b.body?.slice(0,100)}</p></div>}
-              {b.type==='cta' && <div style={{textAlign:'center',padding:8}}><h3 style={{color:'#fff',marginBottom:6,fontSize:18}}>{b.title}</h3><button style={{padding:'7px 18px',borderRadius:8,background:'#ED1966',color:'#fff',border:'none',fontWeight:700,cursor:'pointer',fontSize:13}}>{b.cta}</button></div>}
-              {b.type==='features' && <div style={{display:'flex',gap:10}}>{b.items?.slice(0,3).map((f:any,i:number)=><div key={i} style={{flex:1,padding:8,borderRadius:8,background:'rgba(255,255,255,0.03)',textAlign:'center',fontSize:11,color:'rgba(255,255,255,0.5)'}}>{f.icon} {f.title}</div>)}</div>}
-              {b.type==='stats' && <div style={{display:'flex',gap:16,justifyContent:'center'}}>{b.items?.map((s:any,i:number)=><div key={i} style={{textAlign:'center'}}><div style={{fontSize:20,fontWeight:900,color:'#fff'}}>{s.value}</div><div style={{fontSize:11,color:'rgba(255,255,255,0.4)'}}>{s.label}</div></div>)}</div>}
-              {(b.type==='pricing'||b.type==='testimonials'||b.type==='faq'||b.type==='image') && <div style={{textAlign:'center',fontSize:12,color:'rgba(255,255,255,0.3)',padding:8}}>{BLOCK_LABELS[b.type as BlockType]} — click to edit</div>}
-            </div>
-          ))}
-        </div>
-      </div>
+        {/* Section properties */}
+        <div style={{ flex:1, overflowY:'auto', padding:14 }}>
 
-      {/* Right: Properties */}
-      {sel && (
-        <div style={{width:260,flexShrink:0,borderLeft:'1px solid var(--border-2)',overflowY:'auto',background:'var(--surface)',padding:16}}>
-          <p style={{fontSize:13,fontWeight:700,color:'var(--text)',marginBottom:16}}>{BLOCK_LABELS[sel.type as BlockType]} Settings</p>
-          {(sel.type==='hero'||sel.type==='cta'||sel.type==='text') && (
-            <div style={{display:'flex',flexDirection:'column',gap:12}}>
-              {['title','subtitle','cta','cta2','body'].filter(k=>sel[k]!==undefined).map(k=>(
-                <div key={k}>
-                  <label style={{fontSize:12,color:'var(--text-3)',textTransform:'capitalize'}}>{k}</label>
-                  {k==='body'||k==='subtitle' ? <textarea value={sel[k]||''} onChange={e=>upd(sel.id,{[k]:e.target.value})} rows={3} style={{...inp,resize:'vertical'}}/> : <input value={sel[k]||''} onChange={e=>upd(sel.id,{[k]:e.target.value})} style={inp}/>}
+          {activeSection === 'hero' && (
+            <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
+              <p style={{ fontSize:11, fontWeight:700, color:'var(--text-4)', textTransform:'uppercase', letterSpacing:0.7 }}>Hero Section</p>
+              <div>
+                <label style={{ fontSize:11, color:'var(--text-3)', fontWeight:600 }}>Headline</label>
+                <textarea value={config.hero?.headline||''} onChange={e=>updateConfig(['hero','headline'],e.target.value)} rows={2} style={{ ...inp, resize:'vertical', lineHeight:1.5 }}/>
+              </div>
+              <div>
+                <label style={{ fontSize:11, color:'var(--text-3)', fontWeight:600 }}>Subheadline</label>
+                <textarea value={config.hero?.subheadline||''} onChange={e=>updateConfig(['hero','subheadline'],e.target.value)} rows={3} style={{ ...inp, resize:'vertical', lineHeight:1.5 }}/>
+              </div>
+              <div>
+                <label style={{ fontSize:11, color:'var(--text-3)', fontWeight:600 }}>Primary CTA Button</label>
+                <input value={config.hero?.cta_primary||''} onChange={e=>updateConfig(['hero','cta_primary'],e.target.value)} style={inp}/>
+              </div>
+              <div>
+                <label style={{ fontSize:11, color:'var(--text-3)', fontWeight:600 }}>Secondary CTA</label>
+                <input value={config.hero?.cta_secondary||''} onChange={e=>updateConfig(['hero','cta_secondary'],e.target.value)} style={inp}/>
+              </div>
+              <div>
+                <label style={{ fontSize:11, color:'var(--text-3)', fontWeight:600 }}>Background Color</label>
+                <div style={{ display:'flex', gap:7, marginTop:5 }}>
+                  <input type="color" value={config.hero?.bg_color||'#050508'} onChange={e=>updateConfig(['hero','bg_color'],e.target.value)} style={{ width:40, height:34, borderRadius:8, border:'1px solid var(--border-2)', cursor:'pointer', padding:2 }}/>
+                  <input value={config.hero?.bg_color||''} onChange={e=>updateConfig(['hero','bg_color'],e.target.value)} style={{ ...inp, marginTop:0, flex:1, fontFamily:'monospace', fontSize:12 }}/>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeSection === 'stats' && (
+            <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
+              <p style={{ fontSize:11, fontWeight:700, color:'var(--text-4)', textTransform:'uppercase', letterSpacing:0.7 }}>Stats Bar</p>
+              {(config.stats?.items||[]).map((item:any, i:number) => (
+                <div key={i} style={{ padding:12, borderRadius:10, background:'var(--surface-2)', border:'1px solid var(--border-2)' }}>
+                  <div style={{ fontSize:11, color:'var(--text-4)', marginBottom:7 }}>Stat {i+1}</div>
+                  <input value={item.value||''} onChange={e=>{ const items=[...config.stats.items]; items[i]={...items[i],value:e.target.value}; updateConfig(['stats','items'],items) }} placeholder="Value (e.g. <3s)" style={{ ...inp, marginBottom:7 }}/>
+                  <input value={item.label||''} onChange={e=>{ const items=[...config.stats.items]; items[i]={...items[i],label:e.target.value}; updateConfig(['stats','items'],items) }} placeholder="Label (e.g. Response time)" style={{ ...inp, marginTop:0 }}/>
                 </div>
               ))}
-              {sel.type==='hero' && <div><label style={{fontSize:12,color:'var(--text-3)'}}>Background</label><div style={{display:'flex',gap:6,marginTop:5}}><input type='color' value={sel.bg||'#050508'} onChange={e=>upd(sel.id,{bg:e.target.value})} style={{width:40,height:34,borderRadius:8,border:'none',cursor:'pointer'}}/><input value={sel.bg||''} onChange={e=>upd(sel.id,{bg:e.target.value})} style={{...inp,marginTop:0,flex:1,fontFamily:'monospace'}}/></div></div>}
             </div>
           )}
-          {sel.type==='image' && (
-            <div style={{display:'flex',flexDirection:'column',gap:12}}>
-              <div><label style={{fontSize:12,color:'var(--text-3)'}}>Image URL</label><input value={sel.url||''} onChange={e=>upd(sel.id,{url:e.target.value})} placeholder='https://...' style={inp}/></div>
-              <div><label style={{fontSize:12,color:'var(--text-3)'}}>Alt text</label><input value={sel.alt||''} onChange={e=>upd(sel.id,{alt:e.target.value})} style={inp}/></div>
-              {sel.url && <img src={sel.url} alt={sel.alt} style={{width:'100%',borderRadius:8}}/>}
+
+          {activeSection === 'features' && (
+            <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
+              <p style={{ fontSize:11, fontWeight:700, color:'var(--text-4)', textTransform:'uppercase', letterSpacing:0.7 }}>Features Grid</p>
+              <div>
+                <label style={{ fontSize:11, color:'var(--text-3)', fontWeight:600 }}>Section Title</label>
+                <input value={config.features?.title||''} onChange={e=>updateConfig(['features','title'],e.target.value)} style={inp}/>
+              </div>
+              {(config.features?.items||[]).map((item:any, i:number) => (
+                <div key={i} style={{ padding:12, borderRadius:10, background:'var(--surface-2)', border:'1px solid var(--border-2)' }}>
+                  <div style={{ fontSize:11, color:'var(--text-4)', marginBottom:7, display:'flex', justifyContent:'space-between' }}>
+                    Feature {i+1}
+                    <button onClick={()=>{ const items=config.features.items.filter((_:any,j:number)=>j!==i); updateConfig(['features','items'],items) }} style={{ background:'none', border:'none', color:'#ef4444', cursor:'pointer', fontSize:11 }}>Remove</button>
+                  </div>
+                  <input value={item.icon||''} onChange={e=>{ const items=[...config.features.items]; items[i]={...items[i],icon:e.target.value}; updateConfig(['features','items'],items) }} placeholder="Icon emoji" style={{ ...inp, marginBottom:6 }}/>
+                  <input value={item.title||''} onChange={e=>{ const items=[...config.features.items]; items[i]={...items[i],title:e.target.value}; updateConfig(['features','items'],items) }} placeholder="Title" style={{ ...inp, marginBottom:6, marginTop:0 }}/>
+                  <input value={item.desc||''} onChange={e=>{ const items=[...config.features.items]; items[i]={...items[i],desc:e.target.value}; updateConfig(['features','items'],items) }} placeholder="Description" style={{ ...inp, marginTop:0 }}/>
+                </div>
+              ))}
+              <button onClick={()=>updateConfig(['features','items'],[...(config.features?.items||[]),{icon:'⭐',title:'New Feature',desc:'Description here'}])} style={{ padding:'8px 14px', borderRadius:9, background:'rgba(237,25,102,0.08)', border:'1px solid rgba(237,25,102,0.2)', color:'var(--pink)', cursor:'pointer', fontSize:12, fontWeight:600 }}>
+                + Add Feature
+              </button>
             </div>
           )}
-          {(sel.type==='features'||sel.type==='stats'||sel.type==='testimonials'||sel.type==='faq'||sel.type==='pricing') && (
-            <div style={{display:'flex',flexDirection:'column',gap:12}}>
-              <div><label style={{fontSize:12,color:'var(--text-3)'}}>Section Title</label><input value={sel.title||''} onChange={e=>upd(sel.id,{title:e.target.value})} style={inp}/></div>
-              <div><label style={{fontSize:12,color:'var(--text-3)'}}>Items (JSON)</label><textarea value={JSON.stringify(sel.items||sel.plans||[],null,2)} onChange={e=>{try{const v=JSON.parse(e.target.value);upd(sel.id,sel.plans?{plans:v}:{items:v})}catch{}}} rows={8} style={{...inp,resize:'vertical',fontFamily:'monospace',fontSize:11}}/></div>
+
+          {activeSection === 'cta' && (
+            <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
+              <p style={{ fontSize:11, fontWeight:700, color:'var(--text-4)', textTransform:'uppercase', letterSpacing:0.7 }}>CTA Section</p>
+              <div><label style={{ fontSize:11, color:'var(--text-3)', fontWeight:600 }}>Title</label><input value={config.cta?.title||''} onChange={e=>updateConfig(['cta','title'],e.target.value)} style={inp}/></div>
+              <div><label style={{ fontSize:11, color:'var(--text-3)', fontWeight:600 }}>Subtitle</label><input value={config.cta?.subtitle||''} onChange={e=>updateConfig(['cta','subtitle'],e.target.value)} style={inp}/></div>
+              <div><label style={{ fontSize:11, color:'var(--text-3)', fontWeight:600 }}>Button Text</label><input value={config.cta?.button||''} onChange={e=>updateConfig(['cta','button'],e.target.value)} style={inp}/></div>
             </div>
           )}
-          <button onClick={()=>removeBlock(sel.id)} style={{width:'100%',marginTop:16,padding:'9px',borderRadius:9,background:'rgba(239,68,68,0.08)',border:'1px solid rgba(239,68,68,0.2)',color:'#ef4444',fontWeight:600,cursor:'pointer',fontSize:13}}>
-            Remove Block
+
+          {activeSection === 'colors' && (
+            <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
+              <p style={{ fontSize:11, fontWeight:700, color:'var(--text-4)', textTransform:'uppercase', letterSpacing:0.7 }}>Colors & Typography</p>
+              {[['Primary Color','colors','primary'],['Background','colors','bg'],['Text Color','colors','text']].map(([name,group,key]) => (
+                <div key={key}>
+                  <label style={{ fontSize:11, color:'var(--text-3)', fontWeight:600 }}>{name}</label>
+                  <div style={{ display:'flex', gap:7, marginTop:5 }}>
+                    <input type="color" value={(config as any)[group]?.[key]||'#ffffff'} onChange={e=>updateConfig([group,key],e.target.value)} style={{ width:40, height:34, borderRadius:8, border:'1px solid var(--border-2)', cursor:'pointer', padding:2 }}/>
+                    <input value={(config as any)[group]?.[key]||''} onChange={e=>updateConfig([group,key],e.target.value)} style={{ ...inp, marginTop:0, flex:1, fontFamily:'monospace', fontSize:12 }}/>
+                  </div>
+                  <div style={{ marginTop:6, height:20, borderRadius:6, background:(config as any)[group]?.[key]||'transparent', border:'1px solid var(--border-2)' }}/>
+                </div>
+              ))}
+              <div>
+                <label style={{ fontSize:11, color:'var(--text-3)', fontWeight:600 }}>Headline Font</label>
+                <select value={config.fonts?.headline||'Syne'} onChange={e=>updateConfig(['fonts','headline'],e.target.value)} style={{ ...inp, cursor:'pointer' }}>
+                  {['Syne','Inter','DM Sans','Poppins','Roboto','Montserrat','Playfair Display','Space Grotesk'].map(f=><option key={f} value={f}>{f}</option>)}
+                </select>
+              </div>
+              <div>
+                <label style={{ fontSize:11, color:'var(--text-3)', fontWeight:600 }}>Body Font</label>
+                <select value={config.fonts?.body||'DM Sans'} onChange={e=>updateConfig(['fonts','body'],e.target.value)} style={{ ...inp, cursor:'pointer' }}>
+                  {['DM Sans','Inter','Roboto','Open Sans','Lato','Source Sans Pro','Nunito'].map(f=><option key={f} value={f}>{f}</option>)}
+                </select>
+              </div>
+            </div>
+          )}
+
+          {activeSection === 'navbar' && (
+            <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
+              <p style={{ fontSize:11, fontWeight:700, color:'var(--text-4)', textTransform:'uppercase', letterSpacing:0.7 }}>Navigation</p>
+              <div><label style={{ fontSize:11, color:'var(--text-3)', fontWeight:600 }}>Logo Text</label><input value={config.navbar?.logo||''} onChange={e=>updateConfig(['navbar','logo'],e.target.value)} style={inp}/></div>
+              <div>
+                <label style={{ fontSize:11, color:'var(--text-3)', fontWeight:600 }}>Nav Links (comma separated)</label>
+                <input value={(config.navbar?.links||[]).join(', ')} onChange={e=>updateConfig(['navbar','links'],e.target.value.split(',').map((s:string)=>s.trim()).filter(Boolean))} placeholder="Features, Pricing, Blog" style={inp}/>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Save button */}
+        <div style={{ padding:12, borderTop:'1px solid var(--border-2)' }}>
+          <button onClick={save} disabled={saving} style={{ width:'100%', padding:'11px', borderRadius:11, background:saved?'#22c55e':'var(--pink)', border:'none', color:'#fff', fontWeight:700, fontSize:14, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:7, transition:'background 0.2s' }}>
+            {saved?<><Check size={15}/> Published!</>:saving?<><RefreshCw size={15} style={{ animation:'spin 0.8s linear infinite' }}/> Saving...</>:<><Save size={15}/> Save & Publish</>}
           </button>
         </div>
-      )}
+      </div>
+
+      {/* CENTER — Live preview iframe */}
+      <div style={{ flex:1, display:'flex', flexDirection:'column', background:'#111118', overflow:'hidden' }}>
+
+        {/* Preview toolbar */}
+        <div style={{ padding:'10px 16px', background:'var(--surface)', borderBottom:'1px solid var(--border-2)', display:'flex', alignItems:'center', gap:10 }}>
+          <div style={{ flex:1, display:'flex', alignItems:'center', gap:6 }}>
+            <div style={{ width:10, height:10, borderRadius:'50%', background:'#ef4444' }}/>
+            <div style={{ width:10, height:10, borderRadius:'50%', background:'#f59e0b' }}/>
+            <div style={{ width:10, height:10, borderRadius:'50%', background:'#22c55e' }}/>
+            <div style={{ flex:1, marginLeft:8, padding:'4px 12px', borderRadius:7, background:'var(--surface-2)', border:'1px solid var(--border-2)', fontSize:12, color:'var(--text-4)' }}>
+              getjut.io
+            </div>
+          </div>
+          <div style={{ display:'flex', gap:4 }}>
+            {([['desktop',Monitor],['tablet',Tablet],['mobile',Smartphone]] as const).map(([d,Icon])=>(
+              <button key={d} onClick={()=>setDevice(d)} title={d} style={{ padding:'5px 8px', borderRadius:8, border:'none', cursor:'pointer', background:device===d?'rgba(237,25,102,0.1)':'transparent', color:device===d?'var(--pink)':'var(--text-4)' }}>
+                <Icon size={16}/>
+              </button>
+            ))}
+          </div>
+          <a href="/" target="_blank" rel="noopener noreferrer" style={{ padding:'5px 12px', borderRadius:8, background:'var(--surface-2)', border:'1px solid var(--border-2)', color:'var(--text-3)', fontSize:12, display:'flex', alignItems:'center', gap:5 }}>
+            <Eye size={12}/> Open live
+          </a>
+        </div>
+
+        {/* iframe wrapper */}
+        <div style={{ flex:1, overflow:'auto', display:'flex', justifyContent:'center', alignItems:'flex-start', padding:'20px', background:'#0a0a12' }}>
+          <div style={{ width:deviceWidth, minHeight:'100%', background:'#050508', borderRadius:device==='desktop'?0:16, overflow:'hidden', boxShadow:device==='desktop'?'none':'0 20px 60px rgba(0,0,0,0.8)', transition:'width 0.3s ease' }}>
+            <iframe
+              ref={iframeRef}
+              src="/en?preview=1"
+              style={{ width:'100%', height:'calc(100vh - 140px)', border:'none', display:'block' }}
+              title="Landing page preview"
+            />
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
