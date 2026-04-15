@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
       if (!stripeKey) return NextResponse.json({ error:'Stripe not configured. Add STRIPE_SECRET_KEY to Vercel env vars.' }, { status:500 })
 
       const Stripe = (await import('stripe')).default
-      const stripe = new Stripe(stripeKey, { apiVersion:'2023-10-16' })
+      const stripe = new Stripe(stripeKey, { apiVersion:'2024-06-20' })
 
       const session = await stripe.checkout.sessions.create({
         payment_method_types:['card'],
