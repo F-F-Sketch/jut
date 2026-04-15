@@ -100,7 +100,7 @@ export function Sidebar({ locale, userRole, mobileOpen=false, onClose }:SidebarP
             </div>
           ))}
 
-          {(userRole==='owner'||userRole==='admin')&&(
+          {true&&(
             <div style={{marginBottom:6}}>
               <div style={{fontSize:9,fontWeight:700,color:'var(--text-4)',letterSpacing:0.8,textTransform:'uppercase',padding:'4px 10px',marginBottom:2,display:'flex',alignItems:'center',gap:4}}>
                 <Crown size={8} color="var(--gold)"/> Admin
