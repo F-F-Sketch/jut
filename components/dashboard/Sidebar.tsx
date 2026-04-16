@@ -18,6 +18,7 @@ const NAV = [
     { href:'automations', label:'Automations', icon:Zap },
     { href:'social', label:'Social Networks', icon:Share2 },
     { href:'agent', label:'AI Agent', icon:Bot },
+    { href:'chatbot', label:'Chat Widget', icon:MessageSquare },
   ]},
   { group:'Business', items:[
     { href:'sales', label:'Sales', icon:ShoppingBag },
