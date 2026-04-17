@@ -47,7 +47,7 @@ export default function SettingsPage() {
 
   // SEO
   const [seo, setSeo] = useState({
-    meta_title:'JUT — AI Platform', meta_description:'Automate your business with AI agents',
+    meta_title:'JUT â AI Platform', meta_description:'Automate your business with AI agents',
     og_image:'', google_analytics:'', facebook_pixel:'',
   })
 
@@ -134,7 +134,7 @@ export default function SettingsPage() {
   const needsSave = ['profile','brand','css','seo'].includes(tab)
 
   return (
-    <div style={{ padding:'clamp(16px,3vw,32px)', maxWidth:1000 }}>
+    <div style={{ padding:'var(--page-pad)',maxWidth:1000 }}>
       <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:24, flexWrap:'wrap', gap:12 }}>
         <div>
           <h1 style={{ fontSize:24, fontWeight:800, letterSpacing:-0.5 }}>Settings</h1>
@@ -147,7 +147,7 @@ export default function SettingsPage() {
         )}
       </div>
 
-      {/* Tab bar — scrollable on mobile */}
+      {/* Tab bar â scrollable on mobile */}
       <div style={{ display:'flex', gap:3, marginBottom:24, background:'var(--surface)', borderRadius:13, padding:4, border:'1px solid var(--border-2)', overflowX:'auto', WebkitOverflowScrolling:'touch' }}>
         {TABS.map(t => (
           <button key={t.id} onClick={() => setTab(t.id)} style={{ display:'flex', alignItems:'center', gap:6, padding:'8px 14px', borderRadius:10, fontSize:12, fontWeight:600, cursor:'pointer', border:'none', background:tab===t.id?'var(--pink)':'transparent', color:tab===t.id?'#fff':'var(--text-3)', whiteSpace:'nowrap', transition:'all 0.15s', flexShrink:0 }}>
@@ -168,11 +168,11 @@ export default function SettingsPage() {
               <div>
                 {label('Timezone')}
                 <select value={profile.timezone} onChange={e=>setProfile(p=>({...p,timezone:e.target.value}))} style={{ ...inp, cursor:'pointer' }}>
-                  <option value="America/Bogota">🇨🇴 Colombia (UTC-5)</option>
-                  <option value="America/New_York">🇺🇸 New York (UTC-5)</option>
-                  <option value="America/Mexico_City">🇲🇽 Mexico City (UTC-6)</option>
-                  <option value="Europe/Madrid">🇪🇸 Madrid (UTC+1)</option>
-                  <option value="America/Sao_Paulo">🇧🇷 São Paulo (UTC-3)</option>
+                  <option value="America/Bogota">ð¨ð´ Colombia (UTC-5)</option>
+                  <option value="America/New_York">ðºð¸ New York (UTC-5)</option>
+                  <option value="America/Mexico_City">ð²ð½ Mexico City (UTC-6)</option>
+                  <option value="Europe/Madrid">ðªð¸ Madrid (UTC+1)</option>
+                  <option value="America/Sao_Paulo">ð§ð· SÃ£o Paulo (UTC-3)</option>
                 </select>
               </div>
             </div>
@@ -186,7 +186,7 @@ export default function SettingsPage() {
           {/* Logo & Favicon */}
           <div style={{ padding:24, borderRadius:18, background:'var(--surface)', border:'1px solid var(--border-2)' }}>
             <h2 style={{ fontSize:16, fontWeight:700, marginBottom:18 }}>Logo & Favicon</h2>
-            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:20 }}>
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(220px,1fr))', gap:16 }}>
               <div>
                 {label('Platform Logo')}
                 <div style={{ marginTop:8, padding:24, borderRadius:12, border:'2px dashed var(--border-2)', textAlign:'center', cursor:'pointer', background:'var(--surface-2)' }} onClick={() => logoRef.current?.click()}>
@@ -273,7 +273,7 @@ export default function SettingsPage() {
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:14 }}>
               <div>
                 <h2 style={{ fontSize:16, fontWeight:700 }}>Custom CSS</h2>
-                <p style={{ fontSize:12, color:'var(--text-3)', marginTop:3 }}>Injected globally — affects all pages and users of your platform</p>
+                <p style={{ fontSize:12, color:'var(--text-3)', marginTop:3 }}>Injected globally â affects all pages and users of your platform</p>
               </div>
               <div style={{ padding:'3px 10px', borderRadius:999, fontSize:11, background:'rgba(34,197,94,0.1)', color:'#22c55e', fontWeight:600, border:'1px solid rgba(34,197,94,0.2)' }}>Live</div>
             </div>
@@ -301,7 +301,7 @@ export default function SettingsPage() {
           <div style={{ padding:24, borderRadius:18, background:'var(--surface)', border:'1px solid var(--border-2)' }}>
             <h2 style={{ fontSize:16, fontWeight:700, marginBottom:18 }}>SEO & Meta Tags</h2>
             <div style={{ display:'grid', gap:14 }}>
-              <div>{label('Meta Title')}<input value={seo.meta_title} onChange={e=>setSeo(s=>({...s,meta_title:e.target.value}))} placeholder="JUT — AI Platform" style={inp}/></div>
+              <div>{label('Meta Title')}<input value={seo.meta_title} onChange={e=>setSeo(s=>({...s,meta_title:e.target.value}))} placeholder="JUT â AI Platform" style={inp}/></div>
               <div>{label('Meta Description')}<textarea value={seo.meta_description} onChange={e=>setSeo(s=>({...s,meta_description:e.target.value}))} rows={3} style={{ ...inp, resize:'vertical' }}/></div>
               <div>{label('OG Image URL (for social sharing)')}<input value={seo.og_image} onChange={e=>setSeo(s=>({...s,og_image:e.target.value}))} placeholder="https://..." style={inp}/></div>
             </div>
@@ -338,15 +338,15 @@ export default function SettingsPage() {
           {[
             { title:'AI Image Generation', color:'#8b5cf6', items:[
               { key:'OPENAI_API_KEY', label:'OpenAI API Key', desc:'DALL-E 3 image generation (~$0.04/image)', link:'https://platform.openai.com/api-keys' },
-              { key:'STABILITY_API_KEY', label:'Stability AI Key', desc:'Stable Diffusion XL (~$0.002/image) — Recommended', link:'https://platform.stability.ai/' },
+              { key:'STABILITY_API_KEY', label:'Stability AI Key', desc:'Stable Diffusion XL (~$0.002/image) â Recommended', link:'https://platform.stability.ai/' },
               { key:'REPLICATE_API_KEY', label:'Replicate API Key', desc:'SDXL via Replicate (~$0.003/image)', link:'https://replicate.com/account/api-tokens' },
             ]},
-            { title:'Payments — Colombia (Wompi)', color:'#22c55e', items:[
+            { title:'Payments â Colombia (Wompi)', color:'#22c55e', items:[
               { key:'WOMPI_PUBLIC_KEY', label:'Wompi Public Key', desc:'PSE, Nequi, Bancolombia, credit cards', link:'https://wompi.co' },
               { key:'WOMPI_INTEGRITY_SECRET', label:'Wompi Integrity Secret', desc:'For secure transaction signatures', link:'https://wompi.co' },
               { key:'WOMPI_EVENTS_SECRET', label:'Wompi Events Secret', desc:'For webhook verification', link:'https://wompi.co' },
             ]},
-            { title:'Payments — International (Stripe)', color:'#3b82f6', items:[
+            { title:'Payments â International (Stripe)', color:'#3b82f6', items:[
               { key:'STRIPE_SECRET_KEY', label:'Stripe Secret Key', desc:'International credit card payments', link:'https://dashboard.stripe.com/apikeys' },
               { key:'STRIPE_PRICE_GROWTH', label:'Stripe Growth Price ID', desc:'Price ID for the Growth plan', link:'https://dashboard.stripe.com/products' },
               { key:'STRIPE_PRICE_ELITE', label:'Stripe Elite Price ID', desc:'Price ID for the Elite plan', link:'https://dashboard.stripe.com/products' },
@@ -424,9 +424,9 @@ export default function SettingsPage() {
           <div style={{ padding:24, borderRadius:18, background:'var(--surface)', border:'1px solid var(--border-2)' }}>
             <h2 style={{ fontSize:15, fontWeight:700, marginBottom:16 }}>Change Password</h2>
             <div style={{ display:'grid', gap:12 }}>
-              <div>{label('Current Password')}<input type="password" placeholder="••••••••" style={inp}/></div>
-              <div>{label('New Password')}<input type="password" placeholder="••••••••" style={inp}/></div>
-              <div>{label('Confirm New Password')}<input type="password" placeholder="••••••••" style={inp}/></div>
+              <div>{label('Current Password')}<input type="password" placeholder="â¢â¢â¢â¢â¢â¢â¢â¢" style={inp}/></div>
+              <div>{label('New Password')}<input type="password" placeholder="â¢â¢â¢â¢â¢â¢â¢â¢" style={inp}/></div>
+              <div>{label('Confirm New Password')}<input type="password" placeholder="â¢â¢â¢â¢â¢â¢â¢â¢" style={inp}/></div>
             </div>
             <button style={{ marginTop:16, padding:'10px 22px', borderRadius:11, background:'var(--pink)', border:'none', color:'#fff', fontWeight:700, fontSize:14, cursor:'pointer' }}>
               Update Password
