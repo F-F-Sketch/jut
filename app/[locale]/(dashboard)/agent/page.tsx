@@ -137,7 +137,7 @@ export default function AgentPage() {
           </div>
           <div>
             <div style={{fontSize:18,fontWeight:800,letterSpacing:-0.3}}>{agent.name||'Your Agent'}</div>
-            <div style={{fontSize:12,color:'var(--text-3)',marginTop:2}}>{agent.role} ÃÂÃÂ· {curTone.label} ÃÂÃÂ· {curLang.label}</div>
+            <div style={{fontSize:12,color:'var(--text-3)',marginTop:2}}>{agent.role} ÃÂÃÂÃÂÃÂ· {curTone.label} ÃÂÃÂÃÂÃÂ· {curLang.label}</div>
           </div>
         </div>
         <button onClick={save} disabled={saving} style={{display:'flex',alignItems:'center',gap:7,padding:'10px 18px',borderRadius:11,background:saved?'#22c55e':'var(--pink)',color:'#fff',border:'none',fontWeight:700,fontSize:14,cursor:'pointer',transition:'background 0.2s',whiteSpace:'nowrap'}}>
