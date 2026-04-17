@@ -59,7 +59,7 @@ export default function PricingEditorPage() {
   const plan=plans[selected]
 
   return(
-    <div style={{padding:28,maxWidth:1200}}>
+    <div style={{padding:'var(--page-pad)',maxWidth:1200}}>
       <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',marginBottom:28,flexWrap:'wrap',gap:12}}>
         <div>
           <h1 style={{fontSize:24,fontWeight:800,letterSpacing:-0.5,marginBottom:4}}>Pricing Editor</h1>
@@ -70,7 +70,7 @@ export default function PricingEditorPage() {
         </button>
       </div>
 
-      <div style={{display:'grid',gridTemplateColumns:'240px 1fr',gap:20,alignItems:'start'}}>
+      <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(240px,1fr))',gap:20,alignItems:'start'}}>
         {/* Plan list */}
         <div style={{display:'flex',flexDirection:'column',gap:8}}>
           <div style={{fontSize:11,fontWeight:700,color:'var(--text-4)',textTransform:'uppercase',letterSpacing:0.7,marginBottom:4}}>Plans ({plans.length})</div>
@@ -79,7 +79,7 @@ export default function PricingEditorPage() {
               <div style={{width:10,height:10,borderRadius:'50%',background:p.color,flexShrink:0}}/>
               <div style={{flex:1,minWidth:0}}>
                 <div style={{fontSize:14,fontWeight:600,color:'var(--text)'}}>{p.name}</div>
-                <div style={{fontSize:11,color:'var(--text-4)'}}>{p.price_cop===0?'Free':'$'+p.price_usd+' USD'} · {p.features.length} features</div>
+                <div style={{fontSize:11,color:'var(--text-4)'}}>{p.price_cop===0?'Free':'$'+p.price_usd+' USD'} Â· {p.features.length} features</div>
               </div>
               {p.highlight&&<Star size={11} color="var(--pink)" fill="var(--pink)"/>}
             </div>
