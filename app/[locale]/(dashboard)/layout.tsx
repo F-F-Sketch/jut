@@ -8,6 +8,8 @@ import { PageTransition } from '@/components/ui/PageTransition'
 import { CursorGlow } from '@/components/ui/CursorGlow'
 import { AuroraBackground } from '@/components/ui/AuroraBackground'
 
+const OWNER_IDS = ['501272f0-032f-4630-986d-e75487f1806d']
+
 export default function DashboardLayout({ children, params }:{ children:React.ReactNode; params:{ locale:string } }) {
   const { locale } = params
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -21,9 +23,8 @@ export default function DashboardLayout({ children, params }:{ children:React.Re
       const { data:{ user:u } } = await supabase.auth.getUser()
       if (!u) { router.push('/'+locale+'/login'); return }
       setUser(u)
-      const OWNER_IDS = ['501272f0-032f-4630-986d-e75487f1806d']
       if (OWNER_IDS.includes(u.id)) {
-        setProfile({ full_name: u.email?.split('@')[0]||'Owner', role:'owner', plan:'elite' })
+        setProfile({ full_name:u.email?.split('@')[0]||'Owner', role:'owner', plan:'elite' })
         return
       }
       const { data:p } = await supabase.from('profiles').select('full_name,role,plan').eq('id',u.id).single()
@@ -31,47 +32,32 @@ export default function DashboardLayout({ children, params }:{ children:React.Re
     })()
   }, [])
 
+  // Close sidebar on route change (mobile)
+  useEffect(() => { setSidebarOpen(false) }, [])
+
   return (
-    <div style={{ display:'flex', height:'100vh', background:'var(--bg)', position:'relative', overflow:'hidden' }}>
+    <div className="dash-root">
       <AuroraBackground/>
       <CursorGlow/>
 
-      {/* Mobile overlay */}
-      {sidebarOpen && (
-        <div onClick={() => setSidebarOpen(false)} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.6)', zIndex:98, backdropFilter:'blur(2px)' }}/>
-      )}
+      {/* Overlay */}
+      <div className={'dash-overlay'+(sidebarOpen?' show':'')} onClick={()=>setSidebarOpen(false)}/>
 
-      <Sidebar locale={locale} userRole={profile?.role} mobileOpen={sidebarOpen} onClose={() => setSidebarOpen(false)}/>
+      {/* Sidebar */}
+      <div className={'dash-sidebar'+(sidebarOpen?' open':'')}>
+        <Sidebar locale={locale} userRole={profile?.role} onClose={()=>setSidebarOpen(false)}/>
+      </div>
 
-      {/* Main area — fixed topbar + scrollable content */}
-      <div style={{
-        flex:1, display:'flex', flexDirection:'column',
-        marginLeft:240, minWidth:0, position:'relative', zIndex:1,
-        height:'100vh', overflow:'hidden',
-      }}>
-        <style>{`
-          @media (max-width: 768px) {
-            .main-margin { margin-left: 0 !important; }
-            .mobile-menu-btn { display: flex !important; }
-            .sidebar-spacer { display: none !important; }
-          }
-        `}</style>
-
-        <Topbar
-          locale={locale}
-          userName={profile?.full_name || user?.email || 'User'}
-          onMenuToggle={() => setSidebarOpen(!sidebarOpen)}
-        />
-
-        {/* SCROLLABLE CONTENT — this is the fix */}
-        <main style={{
-          flex:1,
-          overflowY:'auto',
-          overflowX:'hidden',
-          paddingTop:60,
-          position:'relative',
-          height:'calc(100vh - 0px)',
-        }}>
+      {/* Main */}
+      <div className="dash-main">
+        <div className="dash-topbar">
+          <Topbar
+            locale={locale}
+            userName={profile?.full_name||user?.email||'User'}
+            onMenuToggle={()=>setSidebarOpen(!sidebarOpen)}
+          />
+        </div>
+        <main className="dash-content">
           <PageTransition>{children}</PageTransition>
         </main>
       </div>
