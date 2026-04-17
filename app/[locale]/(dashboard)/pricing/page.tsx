@@ -73,7 +73,7 @@ export default function PricingPage({ params }:{ params:{ locale:string } }) {
               <button style={{width:'100%',padding:'11px',borderRadius:11,border:'1px solid var(--border-2)',background:'var(--surface-2)',color:'var(--text-2)',fontSize:13,fontWeight:700,cursor:'pointer',marginBottom:16}}>{plan.cta}</button>
             ):(
               <div style={{display:'flex',flexDirection:'column',gap:8,marginBottom:16}}>
-                <button onClick={()=>checkout(plan.id,'wompi')} disabled={loading===plan.id+'wompi'} style={{width:'100%',padding:'11px',borderRadius:11,border:'none',background:plan.highlight?'var(--pink)':'var(--surface-2)',color:plan.highlight?'#fff':'var(--text)',fontSize:13,fontWeight:700,cursor:'pointer',border:plan.highlight?'none':'1px solid var(--border-2)',opacity:loading===plan.id+'wompi'?0.7:1,transition:'all 0.2s'}}>
+                <button onClick={()=>checkout(plan.id,'wompi')} disabled={loading===plan.id+'wompi'} style={{width:'100%',padding:'11px',borderRadius:11,background:plan.highlight?'var(--pink)':'var(--surface-2)',color:plan.highlight?'#fff':'var(--text)',fontSize:13,fontWeight:700,cursor:'pointer',border:plan.highlight?'none':'1px solid var(--border-2)',opacity:loading===plan.id+'wompi'?0.7:1,transition:'all 0.2s'}}>
                   {loading===plan.id+'wompi'?'..':'Pagar con Wompi (COP)'}
                 </button>
                 <button onClick={()=>checkout(plan.id,'stripe')} disabled={loading===plan.id+'stripe'} style={{width:'100%',padding:'11px',borderRadius:11,border:'1px solid var(--border-2)',background:'var(--surface-2)',color:'var(--text-2)',fontSize:13,fontWeight:600,cursor:'pointer',opacity:loading===plan.id+'stripe'?0.7:1}}>
