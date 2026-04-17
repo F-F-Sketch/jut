@@ -121,15 +121,15 @@ export default function ChatbotPage() {
   if (loading) return <div style={{padding:32,color:'var(--text-3)'}}>Loading...</div>
 
   return (
-    <div style={{padding:28,maxWidth:1100}}>
+    <div style={{padding:'var(--page-pad)',maxWidth:1100}}>
       <div style={{marginBottom:28}}>
         <h1 style={{fontSize:24,fontWeight:800,letterSpacing:-0.5,marginBottom:4}}>Chat Widget</h1>
         <p style={{fontSize:14,color:'var(--text-3)'}}>Embed your AI agent on any website with one line of code</p>
       </div>
 
-      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:20}}>
+      <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(300px,1fr))',gap:16}}>
 
-        {/* LEFT — Config */}
+        {/* LEFT â Config */}
         <div style={{display:'flex',flexDirection:'column',gap:16}}>
 
           {/* Widget key */}
@@ -205,7 +205,7 @@ export default function ChatbotPage() {
                   <div style={{width:32,height:32,borderRadius:9,background:'linear-gradient(135deg,var(--pink),var(--blue))',display:'flex',alignItems:'center',justifyContent:'center',fontSize:13,fontWeight:900,color:'#fff',flexShrink:0}}>{(a.name||'A').slice(0,1)}</div>
                   <div style={{flex:1}}>
                     <div style={{fontSize:13,fontWeight:600,color:'var(--text)'}}>{a.name}</div>
-                    <div style={{fontSize:11,color:'var(--text-4)'}}>{a.type||'general'} · {a.tone||'friendly'}</div>
+                    <div style={{fontSize:11,color:'var(--text-4)'}}>{a.type||'general'} Â· {a.tone||'friendly'}</div>
                   </div>
                   <span style={{fontSize:11,padding:'2px 7px',borderRadius:999,background:AGENT_TYPES.find(t=>t.id===a.type)?.color+'20'||'rgba(34,197,94,0.1)',color:AGENT_TYPES.find(t=>t.id===a.type)?.color||'#22c55e',fontWeight:600}}>
                     {a.type||'general'}
@@ -217,7 +217,7 @@ export default function ChatbotPage() {
           )}
         </div>
 
-        {/* RIGHT — Integration code */}
+        {/* RIGHT â Integration code */}
         <div style={{display:'flex',flexDirection:'column',gap:16}}>
 
           {/* Platform selector */}
