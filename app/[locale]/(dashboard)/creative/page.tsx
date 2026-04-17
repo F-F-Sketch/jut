@@ -318,7 +318,7 @@ export default function CreativePage(){
                 <span style={{fontSize:72,fontWeight:900,color:'var(--pink)',letterSpacing:-4,lineHeight:1,fontFamily:'var(--font-display)'}}>{analysis.overall_score}</span>
                 <span style={{fontSize:16,color:'var(--text-4)',marginBottom:8}}>/100</span>
               </div>
-              {analysis.best_platform&&<span style={{padding:'3px 9px',borderRadius:999,fontSize:11,fontWeight:600,background:'rgba(59,130,246,0.1)',color:'#60a5fa',border:'1px solid rgba(59,130,246,0.2)'}}>ÃÂ°ÃÂÃÂÃÂ± {analysis.best_platform}</span>}
+              {analysis.best_platform&&<span style={{padding:'3px 9px',borderRadius:999,fontSize:11,fontWeight:600,background:'rgba(59,130,246,0.1)',color:'#60a5fa',border:'1px solid rgba(59,130,246,0.2)'}}>ÃÂÃÂ°ÃÂÃÂÃÂÃÂÃÂÃÂ± {analysis.best_platform}</span>}
             </div>
           )}
 
@@ -373,7 +373,7 @@ export default function CreativePage(){
               </div>
             ))}
 
-            {/* HEATMAP ÃÂ¢ÃÂÃÂ Thermal like example 1 */}
+            {/* HEATMAP ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ Thermal like example 1 */}
             {tab==='heatmap'&&(!preview?(
               <div style={{textAlign:'center',padding:'60px 20px',color:'var(--text-3)'}}>
                 <Eye size={50} style={{opacity:0.1,display:'block',margin:'0 auto 14px'}}/>
@@ -384,7 +384,7 @@ export default function CreativePage(){
                 <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',marginBottom:14}}>
                   <div>
                     <h3 style={{fontSize:16,fontWeight:700,marginBottom:3}}>Thermal Heatmap</h3>
-                    <p style={{fontSize:12,color:'var(--text-4)'}}>Eye-tracking simulation ÃÂ¢ÃÂÃÂ red = maximum attention</p>
+                    <p style={{fontSize:12,color:'var(--text-4)'}}>Eye-tracking simulation ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ red = maximum attention</p>
                   </div>
                   <div style={{display:'flex',gap:6,alignItems:'center'}}>
                     {[['#ff0000','High'],['#ffa500','Med'],['#ffff00','Low'],['#00c864','Min']].map(([color,lbl])=>(
@@ -401,7 +401,7 @@ export default function CreativePage(){
                   {/* Zone labels */}
                   {(analysis?.heatmap_zones||[]).map((z:any,i:number)=>(
                     <div key={i} style={{position:'absolute',left:z.x+'%',top:z.y+'%',transform:'translate(-50%,-130%)',background:'rgba(0,0,0,0.82)',color:'#fff',fontSize:9,padding:'3px 7px',borderRadius:5,whiteSpace:'nowrap',backdropFilter:'blur(6px)',border:'1px solid rgba(255,255,255,0.1)',pointerEvents:'none',zIndex:2}}>
-                      {z.intensity>=70?'ÃÂ°ÃÂÃÂÃÂ´':z.intensity>=40?'ÃÂ°ÃÂÃÂÃÂ¡':'ÃÂ°ÃÂÃÂÃÂ¢'} {z.label} {z.intensity}%
+                      {z.intensity>=70?'ÃÂÃÂ°ÃÂÃÂÃÂÃÂÃÂÃÂ´':z.intensity>=40?'ÃÂÃÂ°ÃÂÃÂÃÂÃÂÃÂÃÂ¡':'ÃÂÃÂ°ÃÂÃÂÃÂÃÂÃÂÃÂ¢'} {z.label} {z.intensity}%
                     </div>
                   ))}
                 </div>
@@ -423,7 +423,7 @@ export default function CreativePage(){
               </div>
             ))}
 
-            {/* FOCUS MAP ÃÂ¢ÃÂÃÂ Dark overlay like example 2 */}
+            {/* FOCUS MAP ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ Dark overlay like example 2 */}
             {tab==='focusmap'&&(!preview?(
               <div style={{textAlign:'center',padding:'60px 20px',color:'var(--text-3)'}}>
                 <Target size={50} style={{opacity:0.1,display:'block',margin:'0 auto 14px'}}/>
@@ -449,7 +449,7 @@ export default function CreativePage(){
                       {analysis.heatmap_zones.filter((z:any)=>z.intensity>=60).map((z:any,i:number)=>(
                         <div key={i} style={{display:'flex',alignItems:'center',gap:8}}>
                           <div style={{width:7,height:7,borderRadius:'50%',background:z.intensity>=70?'#ef4444':'#f59e0b',flexShrink:0}}/>
-                          <span style={{fontSize:12,color:'var(--text-2)'}}><strong>{z.label}</strong> ÃÂ¢ÃÂÃÂ {z.intensity>=75?'Critical focal point':'Strong attention zone'}</span>
+                          <span style={{fontSize:12,color:'var(--text-2)'}}><strong>{z.label}</strong> ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ {z.intensity>=75?'Critical focal point':'Strong attention zone'}</span>
                         </div>
                       ))}
                     </div>
@@ -523,7 +523,7 @@ export default function CreativePage(){
               </div>
             )}
 
-            {/* VARIANTS ÃÂ¢ÃÂÃÂ Full canvas redesigns */}
+            {/* VARIANTS ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ Full canvas redesigns */}
             {tab==='variants'&&(
               <div style={{position:'relative'}}>
                 <PlanGate feature="AI Creative Redesigns" plan={userPlan}/>
@@ -537,7 +537,7 @@ export default function CreativePage(){
                   <div style={{textAlign:'center',padding:'50px 20px',color:'var(--text-3)'}}>
                     <Layers size={50} style={{opacity:0.1,display:'block',margin:'0 auto 14px'}}/>
                     <p style={{fontSize:15,fontWeight:600,color:'var(--text-2)',marginBottom:7}}>AI Creative Redesigns</p>
-                    <p style={{fontSize:13,marginBottom:22,maxWidth:360,margin:'0 auto 22px'}}>JUT AI will generate 4 complete redesigns of your creative ÃÂ¢ÃÂÃÂ new layout, colors, copy and visuals ÃÂ¢ÃÂÃÂ with all improvements applied</p>
+                    <p style={{fontSize:13,marginBottom:22,maxWidth:360,margin:'0 auto 22px'}}>JUT AI will generate 4 complete redesigns of your creative ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ new layout, colors, copy and visuals ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ with all improvements applied</p>
                     {analysis?(
                       <button onClick={generateVariants} style={{display:'inline-flex',alignItems:'center',gap:8,padding:'11px 22px',borderRadius:12,background:'linear-gradient(135deg,#ED1966,#b0124e)',color:'#fff',border:'none',fontWeight:700,fontSize:14,cursor:'pointer',boxShadow:'0 4px 18px rgba(237,25,102,0.35)'}}>
                         <Layers size={14}/> Generate 4 Redesigns
@@ -552,7 +552,7 @@ export default function CreativePage(){
                         <RefreshCw size={11}/> Regenerate
                       </button>
                     </div>
-                    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:16}}>
+                    <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(260px,1fr))',gap:14}}>
                       {variants.map((v:any,i:number)=>(
                         <div key={i} style={{borderRadius:16,background:'var(--surface-2)',border:'1px solid var(--border-2)',overflow:'hidden',transition:'all 0.2s'}} onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.borderColor='rgba(237,25,102,0.35)'} onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.borderColor=''}>
                           {/* Full canvas redesign mockup */}
@@ -656,7 +656,7 @@ export default function CreativePage(){
   )
 }
 
-// VariantCanvas ÃÂ¢ÃÂÃÂ renders a full canvas redesign of the creative
+// VariantCanvas ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ renders a full canvas redesign of the creative
 function VariantCanvas({variant,index,originalImage}:{variant:any;index:number;originalImage:string}){
   const canvasRef=useRef<HTMLCanvasElement>(null)
   useEffect(()=>{
