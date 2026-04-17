@@ -70,7 +70,7 @@ export default function SocialPage() {
   function getCount(id:string) { return automations.filter(a => a.trigger?.platform === id).length }
 
   function handleConnect(network: typeof NETWORKS[0]) {
-    if (network.status === 'coming_soon') { toast('Coming soon! We are building the ' + network.name + ' integration.', { icon:'ð', duration:3000 }); return }
+    if (network.status === 'coming_soon') { toast('Coming soon! We are building the ' + network.name + ' integration.', { icon:'Ã°ÂÂÂ', duration:3000 }); return }
     if (network.oauthPath) window.location.href = network.oauthPath
   }
 
@@ -85,7 +85,7 @@ export default function SocialPage() {
   if (loading) return <div style={{padding:32,color:'var(--text-3)'}}>Loading...</div>
 
   return (
-    <div style={{padding:28,maxWidth:1000}}>
+    <div style={{padding:'var(--page-pad)',maxWidth:1000}}>
       <div style={{marginBottom:28}}>
         <h1 style={{fontSize:26,fontWeight:800,letterSpacing:-0.5,marginBottom:4}}>Social Networks</h1>
         <p style={{fontSize:14,color:'var(--text-3)'}}>{integrations.filter(i=>i.status==='active').length} connected of {NETWORKS.filter(n=>n.status==='available').length} available</p>
@@ -108,12 +108,12 @@ export default function SocialPage() {
                   <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap',marginBottom:3}}>
                     <span style={{fontWeight:700,fontSize:16,color:'var(--text)'}}>{network.name}</span>
                     {network.status==='coming_soon'&&<span style={{fontSize:11,padding:'2px 8px',borderRadius:999,background:'rgba(251,191,36,0.1)',color:'#fbbf24',fontWeight:600}}>Coming Soon</span>}
-                    {connected&&<span style={{fontSize:11,padding:'2px 8px',borderRadius:999,background:'rgba(34,197,94,0.1)',color:'#22c55e',fontWeight:600,display:'flex',alignItems:'center',gap:4}}><CheckCircle2 size={11}/> Connected{integration?.account_name?' Â· '+integration.account_name:''}</span>}
+                    {connected&&<span style={{fontSize:11,padding:'2px 8px',borderRadius:999,background:'rgba(34,197,94,0.1)',color:'#22c55e',fontWeight:600,display:'flex',alignItems:'center',gap:4}}><CheckCircle2 size={11}/> Connected{integration?.account_name?' ÃÂ· '+integration.account_name:''}</span>}
                     {count>0&&<span style={{fontSize:11,color:'#22c55e'}}>{count} automation{count!==1?'s':''}</span>}
                   </div>
                   <div style={{fontSize:13,color:'var(--text-3)'}}>{network.desc}</div>
                 </div>
-                <div style={{display:'flex',gap:8,flexShrink:0}}>
+                <div style={{display:'flex',gap:8,flexShrink:0,flexWrap:'wrap'}}>
                   {connected?(
                     <button onClick={e=>{e.stopPropagation();disconnect(network.id)}} disabled={disconnecting===network.id} style={{display:'flex',alignItems:'center',gap:6,padding:'8px 14px',borderRadius:10,background:'rgba(239,68,68,0.08)',border:'1px solid rgba(239,68,68,0.2)',color:'#ef4444',fontWeight:600,fontSize:13,cursor:'pointer'}}>
                       {disconnecting===network.id?<RefreshCw size={13} style={{animation:'spin 0.8s linear infinite'}}/>:<Unplug size={13}/>} Disconnect
@@ -130,7 +130,7 @@ export default function SocialPage() {
               </div>
               {isExpanded&&(
                 <div style={{padding:'0 20px 20px',borderTop:'1px solid var(--border-2)'}}>
-                  <div style={{paddingTop:16,display:'grid',gridTemplateColumns:'1fr 1fr',gap:20}}>
+                  <div style={{paddingTop:16,display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(240px,1fr))',gap:16}}>
                     <div>
                       <p style={{fontSize:12,fontWeight:700,color:'var(--text-3)',textTransform:'uppercase',letterSpacing:0.6,marginBottom:10}}>Triggers Available</p>
                       {network.triggers.map(t=>(
