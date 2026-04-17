@@ -69,15 +69,7 @@ export default function AgentPage() {
   const [tabOpen, setTabOpen] = useState(false)
   const fileUploadRef = useRef<HTMLInputElement>(null)
 
-  useEffect(() => {
-    const id = 'jut-agent-styles'
-    if (document.getElementById(id)) return
-    const s = document.createElement('style')
-    s.id = id
-    s.textContent = '.agent-layout{display:grid;grid-template-columns:200px 1fr;gap:16px}.agent-sidenav{display:flex;flex-direction:column;gap:3px}.tab-dropdown{display:none}@media(max-width:768px){.agent-layout{grid-template-columns:1fr!important}.agent-sidenav{display:none!important}.tab-dropdown{display:block!important}.lang-grid{grid-template-columns:1fr 1fr!important}.identity-grid{grid-template-columns:1fr!important}.biz-grid{grid-template-columns:1fr!important}.tone-grid{grid-template-columns:1fr 1fr!important}.rl-grid{grid-template-columns:1fr 1fr!important}}@media(max-width:480px){.lang-grid{grid-template-columns:1fr!important}.tone-grid{grid-template-columns:1fr!important}.rl-grid{grid-template-columns:1fr!important}}'
-    document.head.appendChild(s)
-    return () => { const el=document.getElementById(id); if(el) el.remove() }
-  }, [])
+  
   const supabase = createClient()
 
   useEffect(()=>{ load(); loadDocs() },[])
@@ -145,7 +137,7 @@ export default function AgentPage() {
           </div>
           <div>
             <div style={{fontSize:18,fontWeight:800,letterSpacing:-0.3}}>{agent.name||'Your Agent'}</div>
-            <div style={{fontSize:12,color:'var(--text-3)',marginTop:2}}>{agent.role} ÃÂ· {curTone.label} ÃÂ· {curLang.label}</div>
+            <div style={{fontSize:12,color:'var(--text-3)',marginTop:2}}>{agent.role} ÃÂÃÂ· {curTone.label} ÃÂÃÂ· {curLang.label}</div>
           </div>
         </div>
         <button onClick={save} disabled={saving} style={{display:'flex',alignItems:'center',gap:7,padding:'10px 18px',borderRadius:11,background:saved?'#22c55e':'var(--pink)',color:'#fff',border:'none',fontWeight:700,fontSize:14,cursor:'pointer',transition:'background 0.2s',whiteSpace:'nowrap'}}>
