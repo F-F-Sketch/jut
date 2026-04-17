@@ -40,7 +40,7 @@ const LANGUAGES = [
   { code:'fr', label:'Francais', region:'France' },
 ]
 
-// Avatar options as colored initials — no emojis
+// Avatar options as colored initials â no emojis
 const AVATARS = [
   { id:'S', bg:'linear-gradient(135deg,#ED1966,#b0124e)' },
   { id:'A', bg:'linear-gradient(135deg,#2152A4,#1a3d7a)' },
@@ -177,7 +177,16 @@ export default function AgentPage() {
   ]
 
   return (
-    <div style={{ padding:28, maxWidth:1100 }}>
+    <div style={{ padding:'var(--page-pad)', maxWidth:1100 }}>
+      <style>{`
+        @media(max-width:768px){
+          .agent-grid{grid-template-columns:1fr!important}
+          .agent-identity-grid{grid-template-columns:1fr!important}
+          .lang-grid{grid-template-columns:1fr 1fr!important}
+          .personality-grid{grid-template-columns:1fr 1fr!important}
+          .test-area{min-height:200px!important;max-height:280px!important}
+        }
+      `}</style>
 
       {/* Header */}
       <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', marginBottom:32, flexWrap:'wrap', gap:16 }}>
@@ -192,7 +201,7 @@ export default function AgentPage() {
               <span style={{ fontSize:11, padding:'2px 8px', borderRadius:999, background:'rgba(34,197,94,0.1)', color:'#22c55e', border:'1px solid rgba(34,197,94,0.2)', fontWeight:600 }}>
                 Active
               </span>
-              <span style={{ fontSize:12, color:'var(--text-4)' }}>{currentTone.label} · {currentLang.label}</span>
+              <span style={{ fontSize:12, color:'var(--text-4)' }}>{currentTone.label} Â· {currentLang.label}</span>
             </div>
           </div>
         </div>
@@ -201,7 +210,7 @@ export default function AgentPage() {
         </button>
       </div>
 
-      <div style={{ display:'grid', gridTemplateColumns:'220px 1fr', gap:20 }}>
+      <div style={{ display:'grid', gridTemplateColumns:'min(220px,100%) 1fr', gap:16 }}>
 
         {/* LEFT NAV */}
         <div style={{ display:'flex', flexDirection:'column', gap:4 }}>
@@ -253,7 +262,7 @@ export default function AgentPage() {
                   </div>
                 </div>
 
-                {/* Avatar — letter + color, no emojis */}
+                {/* Avatar â letter + color, no emojis */}
                 <div>
                   <label style={{ fontSize:13, fontWeight:600, color:'var(--text-3)', display:'block', marginBottom:10 }}>Avatar Color</label>
                   <div style={{ display:'flex', gap:10, flexWrap:'wrap' }}>
@@ -269,7 +278,7 @@ export default function AgentPage() {
                   </div>
                 </div>
 
-                {/* Language — no flag emojis */}
+                {/* Language â no flag emojis */}
                 <div>
                   <label style={{ fontSize:13, fontWeight:600, color:'var(--text-3)', display:'block', marginBottom:10 }}>Primary Language</label>
                   <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(180px,1fr))', gap:10 }}>
@@ -409,7 +418,7 @@ export default function AgentPage() {
                   ) : docs.length===0 ? (
                     <div style={{ textAlign:'center', padding:'24px 16px', borderRadius:12, background:'var(--surface-2)', border:'1px dashed var(--border-2)' }}>
                       <FileType size={28} style={{ opacity:0.2, display:'block', margin:'0 auto 8px', color:'var(--text-3)' }}/>
-                      <p style={{ fontSize:13, color:'var(--text-4)' }}>No documents yet — upload one above</p>
+                      <p style={{ fontSize:13, color:'var(--text-4)' }}>No documents yet â upload one above</p>
                     </div>
                   ) : (
                     <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
@@ -422,7 +431,7 @@ export default function AgentPage() {
                             </div>
                             <div style={{ flex:1, minWidth:0 }}>
                               <div style={{ fontSize:13, fontWeight:600, color:'var(--text)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{doc.name}</div>
-                              <div style={{ fontSize:11, color:'var(--text-4)', marginTop:2 }}>{doc.file_name} {doc.word_count>0&&'· '+doc.word_count.toLocaleString()+' words'}</div>
+                              <div style={{ fontSize:11, color:'var(--text-4)', marginTop:2 }}>{doc.file_name} {doc.word_count>0&&'Â· '+doc.word_count.toLocaleString()+' words'}</div>
                             </div>
                             <span style={{ padding:'2px 8px', borderRadius:999, fontSize:10, fontWeight:600, background:'rgba(34,197,94,0.1)', color:'#22c55e', border:'1px solid rgba(34,197,94,0.2)' }}>Active</span>
                             <button onClick={()=>deleteDoc(doc.id,doc.name)} style={{ background:'none', border:'none', color:'#ef4444', cursor:'pointer', opacity:0.6, padding:4 }}>
